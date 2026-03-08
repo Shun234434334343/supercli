@@ -1,6 +1,6 @@
 const express = require("express")
 const path = require("path")
-const { connect } = require("./db")
+const { getStorage } = require("./storage/adapter")
 
 const commandsRouter = require("./routes/commands")
 const configRouter = require("./routes/config")
@@ -42,12 +42,8 @@ app.get("/jobs", (req, res) => res.redirect("/api/jobs"))
 
 async function start() {
   try {
-    await connect()
-    console.log("Connected to MongoDB")
-
-    // Create TTL index for plans auto-expiry
-    const db = require("./db").getDb()
-    await db.collection("plans").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 }).catch(() => {})
+    // Initialize storage singleton
+    getStorage()
 
     app.listen(PORT, () => {
       console.log(`DCLI server running on http://localhost:${PORT}`)
