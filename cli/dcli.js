@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
+require('dotenv').config()
 const { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listMcpServers } = require("./config")
 const { execute } = require("./executor")
 const { buildCapabilities } = require("./help-json")
 const { handleMcpRegistryCommand } = require("./mcp-local")
 const { buildLocalPlan, annotateServerPlan, outputHumanPlan } = require("./plan-runtime")
+const { handleAskCommand } = require("./ask")
 const {
   handleSkillsCommand
 } = require("./skills")
@@ -175,6 +177,9 @@ async function main() {
         if (hasServer) console.log("  Sync: dcli sync")
         console.log("  MCP: dcli mcp list | dcli mcp add <name> --url <url> | dcli mcp remove <name>")
         console.log("  Skills: dcli skills list | dcli skills get <ns.res.act> | dcli skills teach")
+        if (config.features?.ask || process.env.OPENAI_BASE_URL) {
+          console.log("  AI: dcli ask \"<your natural language query>\"")
+        }
         console.log("  Server: dcli --server")
         console.log("  Flags: --json | --human | --compact | --schema | --help-json | --server\n")
       } else {
@@ -200,6 +205,12 @@ async function main() {
         return
       }
       outputError({ code: 85, type: "invalid_argument", message: "Unknown config subcommand. Use: show", recoverable: false })
+      return
+    }
+
+    if (positional[0] === "ask") {
+      const config = await loadConfig(SERVER)
+      await handleAskCommand({ positional, config, flags, context: { server: SERVER || "", config }, humanMode, output, outputError })
       return
     }
 

@@ -13,6 +13,7 @@ function buildCapabilities(config, hasServer) {
     }
   }
   if (hasServer) commands.sync = { description: "Sync local config from DCLI_SERVER" }
+  if (config.features?.ask || process.env.OPENAI_BASE_URL) commands.ask = { description: "Execute natural language queries", usage: "dcli ask \"<query>\"" }
 
   return {
     version: "1.0",
