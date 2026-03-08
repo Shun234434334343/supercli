@@ -185,6 +185,53 @@ describe("executor", () => {
     )
   })
 
+  test("handles workflow template replacement when value is not an object", async () => {
+    const workflow = {
+      type: "workflow",
+      steps: [
+        { command: "ns.res.act1", args: { name: "initial" } },
+        { command: "ns.res.act2", args: { info: "Val is {{step.0.result.data.sub}}" } }
+      ]
+    }
+    
+    const context = {
+      config: {
+        commands: [
+          { namespace: "ns", resource: "res", action: "act1", adapter: "builtin" },
+          { namespace: "ns", resource: "res", action: "act2", adapter: "builtin" }
+        ]
+      }
+    }
+
+    // result.data is a string, not an object, so data.sub should hit line 108
+    mockAdapters.builtin.execute
+      .mockResolvedValueOnce({ data: "not-an-object" })
+      .mockResolvedValueOnce({ ok: true })
+
+    await execute(workflow, {}, context)
+
+    expect(mockAdapters.builtin.execute).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        info: "Val is "
+      }),
+      expect.anything()
+    )
+  })
+
+  test("handles custom adapter loading", async () => {
+    const cmd = { adapter: "custom-adapter", namespace: "test", resource: "res", action: "act" }
+    const mockCustom = { execute: jest.fn().mockResolvedValue({ ok: true }) }
+    
+    // We need to mock path.resolve and require
+    // Actually, we can just mock the whole custom adapter path
+    jest.doMock(path.resolve("adapters", "custom-adapter"), () => mockCustom, { virtual: true })
+    
+    const result = await execute(cmd, {}, {})
+    expect(result).toEqual({ ok: true })
+    expect(mockCustom.execute).toHaveBeenCalled()
+  })
+
   test("fetches missing command from server during workflow", async () => {
     const workflow = {
       type: "workflow",
