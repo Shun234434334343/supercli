@@ -78,6 +78,7 @@ dcli skills get <ns.res.act> --show-dag
 # Config & Server
 dcli sync                              # Sync local cache from DCLI_SERVER (when set)
 dcli config show                       # Show cache info
+dcli --server                          # Start the DCLI backend server directly
 
 # Local MCP registry (no server required)
 dcli mcp list
@@ -87,7 +88,11 @@ dcli mcp remove summarize-local
 # Stdio MCP demo (no server required)
 node examples/mcp-stdio/install-demo.js
 dcli ai text summarize --text "Hello world" --json
-dcli --server                          # Start the DCLI backend server directly
+
+# Remote MCP SSE/HTTP demo
+node examples/mcp-sse/server.js
+node examples/mcp-sse/install-demo.js
+dcli ai text summarize_remote --text "Hello world" --json
 
 # Agent capability discovery
 dcli --help-json                       # Machine-readable capabilities
@@ -146,7 +151,7 @@ Every command returns a deterministic envelope:
 
 - **http** — Raw HTTP requests (method, url, headers)
 - **openapi** — Resolves operation from OpenAPI spec
-- **mcp** — Calls MCP server tools
+- **mcp** — Calls MCP server tools (supports both HTTP endpoints and local Stdio processes)
 
 ## Tech Stack
 
