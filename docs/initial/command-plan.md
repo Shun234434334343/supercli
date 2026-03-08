@@ -1,4 +1,4 @@
-The idea of **Command Plans** is extremely powerful because it makes the CLI **predictable, safe, and explainable for agents** before execution. It turns DCLI from a simple command runner into a **deterministic execution planner**.
+The idea of **Command Plans** is extremely powerful because it makes the CLI **predictable, safe, and explainable for agents** before execution. It turns SUPERCLI from a simple command runner into a **deterministic execution planner**.
 
 Below is a **practical spec that fits your stack and architecture**.
 
@@ -6,18 +6,18 @@ Below is a **practical spec that fits your stack and architecture**.
 
 # 1. Concept
 
-A **Command Plan** is a dry-run execution graph returned by DCLI before the command actually runs.
+A **Command Plan** is a dry-run execution graph returned by SUPERCLI before the command actually runs.
 
 Instead of executing:
 
 ```bash
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 An agent can request:
 
 ```bash
-dcli plan referential users fetch --id 42
+supercli plan referential users fetch --id 42
 ```
 
 Response:
@@ -59,7 +59,7 @@ Response:
 The agent can then decide to:
 
 ```bash
-dcli execute plan_abc123
+supercli execute plan_abc123
 ```
 
 ---
@@ -69,31 +69,31 @@ dcli execute plan_abc123
 ### Create Plan
 
 ```bash
-dcli plan <namespace> <resource> <action> [args]
+supercli plan <namespace> <resource> <action> [args]
 ```
 
 Example:
 
 ```bash
-dcli plan referential users fetch --id 42
+supercli plan referential users fetch --id 42
 ```
 
 ### Execute Plan
 
 ```bash
-dcli execute <plan_id>
+supercli execute <plan_id>
 ```
 
 ### Inspect Plan
 
 ```bash
-dcli plan inspect <plan_id>
+supercli plan inspect <plan_id>
 ```
 
 ### Cancel Plan
 
 ```bash
-dcli plan cancel <plan_id>
+supercli plan cancel <plan_id>
 ```
 
 ---
@@ -205,7 +205,7 @@ destructive
 Example destructive command:
 
 ```bash
-dcli infra cluster delete
+supercli infra cluster delete
 ```
 
 Plan:
@@ -227,7 +227,7 @@ Plans can include dependencies.
 Example:
 
 ```bash
-dcli infra deploy service
+supercli infra deploy service
 ```
 
 Plan:
@@ -248,7 +248,7 @@ This creates a **directed execution graph**.
 
 # 7. HTTP API
 
-DCLI server exposes plan endpoints.
+SUPERCLI server exposes plan endpoints.
 
 ### Create Plan
 
@@ -423,19 +423,19 @@ Agents now use:
 ### discover commands
 
 ```
-dcli commands
+supercli commands
 ```
 
 ### inspect command
 
 ```
-dcli inspect referential users fetch
+supercli inspect referential users fetch
 ```
 
 ### plan execution
 
 ```
-dcli plan referential users fetch --id 42
+supercli plan referential users fetch --id 42
 ```
 
 ### evaluate risk
@@ -443,7 +443,7 @@ dcli plan referential users fetch --id 42
 ### execute
 
 ```
-dcli execute plan_abc123
+supercli execute plan_abc123
 ```
 
 This gives **LLMs deterministic control**.
@@ -457,7 +457,7 @@ Plans could support **multi-command orchestration**.
 Example:
 
 ```bash
-dcli plan workflow create-user-and-assign-role
+supercli plan workflow create-user-and-assign-role
 ```
 
 Plan:
@@ -480,7 +480,7 @@ Most CLIs are:
 execute-only
 ```
 
-DCLI becomes:
+SUPERCLI becomes:
 
 ```
 discoverable
@@ -499,7 +499,7 @@ This aligns perfectly with **AI tool ecosystems** like:
 
 # 15. Final Architecture
 
-DCLI becomes **four layers**:
+SUPERCLI becomes **four layers**:
 
 ```
 CLI
@@ -527,6 +527,6 @@ inspectability
 
 ---
 
-If you want, I can also show the **next evolution that would make DCLI extremely unique**:
+If you want, I can also show the **next evolution that would make SUPERCLI extremely unique**:
 
-**"Self-Generating CLIs"** — where DCLI automatically converts an entire **OpenAPI spec into a fully functional CLI namespace with zero code.**
+**"Self-Generating CLIs"** — where SUPERCLI automatically converts an entire **OpenAPI spec into a fully functional CLI namespace with zero code.**

@@ -1,6 +1,6 @@
 # MCP SSE/HTTP Demo
 
-This demo runs a remote MCP server over HTTP with an SSE event stream and executes it from local-first DCLI.
+This demo runs a remote MCP server over HTTP with an SSE event stream and executes it from local-first SUPERCLI.
 
 ## Start Demo Server
 
@@ -21,7 +21,7 @@ In a second terminal:
 node examples/mcp-sse/install-demo.js
 ```
 
-This updates local cache (`~/.dcli/config.json`) with:
+This updates local cache (`~/.supercli/config.json`) with:
 
 - MCP registry entry: `summarize-sse -> http://127.0.0.1:8787`
 - command: `ai.text.summarize_remote`
@@ -29,7 +29,7 @@ This updates local cache (`~/.dcli/config.json`) with:
 ## Execute Demo Command
 
 ```bash
-dcli ai text summarize_remote --text "Hello world from remote mcp" --json
+supercli ai text summarize_remote --text "Hello world from remote mcp" --json
 ```
 
 Expected output includes:
@@ -49,6 +49,6 @@ Then run the command above and observe `tool_called` / `tool_done` events.
 ## Cleanup Optional Stale Entries
 
 ```bash
-dcli mcp list
-dcli mcp remove test-mcp
+supercli mcp list
+supercli mcp remove test-mcp
 ```

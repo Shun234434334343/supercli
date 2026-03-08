@@ -24,8 +24,8 @@ function outputHumanPlan(plan) {
   console.log(`  Persisted: ${plan.persisted ? "yes" : "no"}`)
   console.log("\n  Steps:")
   plan.steps.forEach((s, i) => console.log(`    ${i + 1}. [${s.type}] ${s.description || s.method || ""} ${s.url || ""}`))
-  if (plan.persisted) console.log(`\n  Execute: dcli execute ${plan.plan_id}`)
-  else console.log("\n  Execute: local plan preview only (set DCLI_SERVER for persisted execute)")
+  if (plan.persisted) console.log(`\n  Execute: supercli execute ${plan.plan_id}`)
+  else console.log("\n  Execute: local plan preview only (set SUPERCLI_SERVER for persisted execute)")
   console.log("")
 }
 

@@ -1,11 +1,11 @@
-These are **three features that would make DCLI genuinely stand out** and likely gain traction if open-sourced. They all build on the **cloud-defined command graph** concept you already designed.
+These are **three features that would make SUPERCLI genuinely stand out** and likely gain traction if open-sourced. They all build on the **cloud-defined command graph** concept you already designed.
 
 ---
 
 # 1. Command Graph (Composable CLI)
 
 Most CLIs execute **single commands**.
-DCLI can execute **graphs of commands** defined in config.
+SUPERCLI can execute **graphs of commands** defined in config.
 
 This turns the CLI into a **light orchestration engine**.
 
@@ -62,7 +62,7 @@ Example:
 ## CLI Execution
 
 ```
-dcli infra service deploy
+supercli infra service deploy
 ```
 
 Executor:
@@ -96,7 +96,7 @@ Add an optional **LLM router** that maps natural language to commands.
 Example:
 
 ```
-dcli ask "fetch user 42 and summarize activity"
+supercli ask "fetch user 42 and summarize activity"
 ```
 
 The system resolves:
@@ -197,7 +197,7 @@ Autocomplete comes from **cloud config**, not static definitions.
 Example:
 
 ```
-dcli <TAB>
+supercli <TAB>
 ```
 
 Shows:
@@ -212,7 +212,7 @@ billing
 ---
 
 ```
-dcli referential <TAB>
+supercli referential <TAB>
 ```
 
 Shows:
@@ -226,7 +226,7 @@ devices
 ---
 
 ```
-dcli referential users <TAB>
+supercli referential users <TAB>
 ```
 
 Shows:
@@ -245,13 +245,13 @@ delete
 CLI exposes:
 
 ```
-dcli completion
+supercli completion
 ```
 
 Shell integration:
 
 ```
-eval "$(dcli completion bash)"
+eval "$(supercli completion bash)"
 ```
 
 ---
@@ -261,7 +261,7 @@ eval "$(dcli completion bash)"
 Autocomplete calls:
 
 ```
-dcli __complete referential users
+supercli __complete referential users
 ```
 
 CLI returns:
@@ -319,7 +319,7 @@ workflows
 
 Into one system.
 
-This makes DCLI essentially a:
+This makes SUPERCLI essentially a:
 
 ```
 Universal DevOps + AI CLI runtime
@@ -344,23 +344,23 @@ This combination is currently **rare in developer tooling**.
 One simple demo:
 
 ```
-dcli import-openapi stripe.json
+supercli import-openapi stripe.json
 ```
 
 Then immediately:
 
 ```
-dcli stripe customers list
+supercli stripe customers list
 ```
 
 Or:
 
 ```
-dcli ask "create a stripe customer"
+supercli ask "create a stripe customer"
 ```
 
 That would instantly demonstrate the power.
 
 ---
 
-If you want, I can also show you a **much more radical idea** that would make DCLI a **new category of tool (not just a CLI)** — something closer to a **"Kubernetes for commands"**.
+If you want, I can also show you a **much more radical idea** that would make SUPERCLI a **new category of tool (not just a CLI)** — something closer to a **"Kubernetes for commands"**.

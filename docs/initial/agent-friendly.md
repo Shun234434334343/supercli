@@ -1,8 +1,8 @@
-Your principles are **very solid** and actually align almost perfectly with what an **AI-native CLI runtime** like DCLI should be. The interesting part is that because DCLI is **config-driven**, you can enforce many of these principles **at the platform level**, not per command.
+Your principles are **very solid** and actually align almost perfectly with what an **AI-native CLI runtime** like SUPERCLI should be. The interesting part is that because SUPERCLI is **config-driven**, you can enforce many of these principles **at the platform level**, not per command.
 
 That is the real power: **tool authors cannot accidentally break agent-friendliness**.
 
-Below is how I would **translate your philosophy into concrete DCLI architecture rules**.
+Below is how I would **translate your philosophy into concrete SUPERCLI architecture rules**.
 
 ---
 
@@ -25,7 +25,7 @@ machine mode default
 So execution:
 
 ```bash
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 returns:
@@ -44,7 +44,7 @@ returns:
 Human-friendly view:
 
 ```bash
-dcli referential users fetch --id 42 --human
+supercli referential users fetch --id 42 --human
 ```
 
 Output:
@@ -55,7 +55,7 @@ ID: 42
 Name: Alice
 ```
 
-This aligns DCLI with **agent-first tooling**.
+This aligns SUPERCLI with **agent-first tooling**.
 
 ---
 
@@ -96,7 +96,7 @@ Benefits:
 Agents can query:
 
 ```bash
-dcli schema referential users fetch
+supercli schema referential users fetch
 ```
 
 Response:
@@ -114,7 +114,7 @@ This is **extremely powerful for tool planning**.
 
 # 3. Enforce Semantic Exit Codes Globally
 
-DCLI runtime should **normalize exit codes**.
+SUPERCLI runtime should **normalize exit codes**.
 
 Adapters return structured errors:
 
@@ -154,7 +154,7 @@ Example:
     "message": "User not found",
     "recoverable": false,
     "suggestions": [
-      "Run: dcli referential users list"
+      "Run: supercli referential users list"
     ]
   }
 }
@@ -172,20 +172,20 @@ Humans read stderr.
 
 ---
 
-# 5. DCLI Should Provide Tool Introspection
+# 5. SUPERCLI Should Provide Tool Introspection
 
 Add built-in commands:
 
 ### list commands
 
 ```bash
-dcli commands --json
+supercli commands --json
 ```
 
 ### inspect command
 
 ```bash
-dcli inspect referential users fetch
+supercli inspect referential users fetch
 ```
 
 Example:
@@ -208,14 +208,14 @@ Agents can explore the system.
 
 # 6. Add a Native Tool API
 
-DCLI server should expose:
+SUPERCLI server should expose:
 
 ```
 GET /api/tools
 POST /api/tools/execute
 ```
 
-This instantly makes DCLI compatible with:
+This instantly makes SUPERCLI compatible with:
 
 * OpenAI API tools
 * Model Context Protocol
@@ -251,7 +251,7 @@ Support **JSON Lines streaming**.
 Example:
 
 ```bash
-dcli infra deploy service --stream
+supercli infra deploy service --stream
 ```
 
 stdout:
@@ -279,7 +279,7 @@ Agents can process events.
 Add a discovery endpoint:
 
 ```bash
-dcli capabilities
+supercli capabilities
 ```
 
 Example:
@@ -299,7 +299,7 @@ Useful for agents.
 
 # 10. Automatic Agent-Friendly Behavior
 
-DCLI runtime automatically:
+SUPERCLI runtime automatically:
 
 ### disables colors
 
@@ -336,10 +336,10 @@ Commands should accept stdin.
 Example:
 
 ```bash
-echo '{"id":42}' | dcli referential users fetch
+echo '{"id":42}' | supercli referential users fetch
 ```
 
-DCLI maps stdin to args.
+SUPERCLI maps stdin to args.
 
 This makes pipelines extremely powerful.
 
@@ -350,9 +350,9 @@ This makes pipelines extremely powerful.
 Example:
 
 ```bash
-dcli referential users list --json \
+supercli referential users list --json \
  | jq '.data[].id' \
- | xargs -I {} dcli referential users fetch --id {}
+ | xargs -I {} supercli referential users fetch --id {}
 ```
 
 Because output is deterministic, pipelines work perfectly.
@@ -363,7 +363,7 @@ Because output is deterministic, pipelines work perfectly.
 
 Agents pay for tokens.
 
-So DCLI should support:
+So SUPERCLI should support:
 
 ```
 --compact
@@ -386,7 +386,7 @@ This reduces token usage drastically.
 Agents can run:
 
 ```bash
-dcli help --json
+supercli help --json
 ```
 
 Example:
@@ -414,7 +414,7 @@ Agents can explore the CLI automatically.
 
 # 15. The Big Result
 
-If you implement these ideas, DCLI becomes something very rare:
+If you implement these ideas, SUPERCLI becomes something very rare:
 
 A CLI that is simultaneously:
 
@@ -432,7 +432,7 @@ Most tools only target **one of these audiences**.
 
 ✅ **Key insight for your architecture**
 
-Because DCLI is **config-driven**, these principles can be:
+Because SUPERCLI is **config-driven**, these principles can be:
 
 ```
 enforced automatically
@@ -442,6 +442,6 @@ Meaning every command added to the platform becomes **agent-safe by default**.
 
 ---
 
-If you want, I can also show you **one extremely powerful feature that would make DCLI probably the best AI-native CLI architecture:**
+If you want, I can also show you **one extremely powerful feature that would make SUPERCLI probably the best AI-native CLI architecture:**
 
 **"Command Plans" — where an LLM can request a plan and the CLI returns a safe execution graph before running anything.**

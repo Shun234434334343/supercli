@@ -1,11 +1,11 @@
 # Natural Language execution ("ask")
 
-DCLI seamlessly translates natural language intents into execution steps in your infrastructure by mapping user queries directly to your established command capability graph.
+SUPERCLI seamlessly translates natural language intents into execution steps in your infrastructure by mapping user queries directly to your established command capability graph.
 
 ## Key Features
 
-- **Decentralized Execution (`DCLI_SERVER` vs Local)**: DCLI can generate natural language execution workflows on the backend server to share API keys across teams, or directly on the individual developer's machine locally using `OPENAI_BASE_URL`.
-- **Automatic Fallback Execution**: The translation produces a DAG workflow JSON. DCLI takes this JSON and runs it sequentially via the standard workflow planner mechanism.
+- **Decentralized Execution (`SUPERCLI_SERVER` vs Local)**: SUPERCLI can generate natural language execution workflows on the backend server to share API keys across teams, or directly on the individual developer's machine locally using `OPENAI_BASE_URL`.
+- **Automatic Fallback Execution**: The translation produces a DAG workflow JSON. SUPERCLI takes this JSON and runs it sequentially via the standard workflow planner mechanism.
 - **Dynamic Context**: The LLM context is strictly limited to the definitions and JSON schemas of the actual configured commands.
 
 ## Setup
@@ -20,11 +20,11 @@ export OPENAI_API_KEY=sk-...
 
 ## Usage
 
-If the feature is enabled (either server-side or locally), it becomes visible in `dcli help`.
+If the feature is enabled (either server-side or locally), it becomes visible in `supercli help`.
 
 ```bash
 # Query the system to build and execute a workflow
-dcli ask "list the posts and summarize them"
+supercli ask "list the posts and summarize them"
 
 # Output will stream the execution steps
 # 1. jsonplaceholder posts list 

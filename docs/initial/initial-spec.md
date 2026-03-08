@@ -6,7 +6,7 @@ Tech stack: NodeJS, MongoDB, EJS, TailwindCDN,DaisyUICDN, Vue3CDN (No deps) (mod
 AI:
 ## 1. Overview
 
-**DCLI** is a **cloud-defined dynamic CLI** whose commands are generated from a central configuration.
+**SUPERCLI** is a **cloud-defined dynamic CLI** whose commands are generated from a central configuration.
 Configuration is managed through a **Web UI** and stored in **MongoDB**.
 
 The CLI runtime loads command definitions from the cloud, caches them locally, and executes commands through adapters such as:
@@ -43,7 +43,7 @@ The CLI runtime loads command definitions from the cloud, caches them locally, a
                     |
                     v
           +-------------------+
-          |      DCLI         |
+          |      SUPERCLI         |
           | local runtime     |
           +-------------------+
 ```
@@ -69,7 +69,7 @@ referential users fetch
 Execution:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 ---
@@ -196,7 +196,7 @@ Used for CLI cache invalidation.
 ## Binary
 
 ```
-dcli
+supercli
 ```
 
 ---
@@ -204,13 +204,13 @@ dcli
 ## Command Syntax
 
 ```
-dcli <namespace> <resource> <action> [args]
+supercli <namespace> <resource> <action> [args]
 ```
 
 Example:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 ---
@@ -220,7 +220,7 @@ dcli referential users fetch --id 42
 ### help
 
 ```
-dcli help
+supercli help
 ```
 
 Lists namespaces.
@@ -230,7 +230,7 @@ Lists namespaces.
 ### config refresh
 
 ```
-dcli config refresh
+supercli config refresh
 ```
 
 Forces cache refresh.
@@ -240,7 +240,7 @@ Forces cache refresh.
 ### config show
 
 ```
-dcli config show
+supercli config show
 ```
 
 Displays current configuration version.
@@ -252,7 +252,7 @@ Displays current configuration version.
 Location:
 
 ```
-~/.dcli/config.json
+~/.supercli/config.json
 ```
 
 Example:
@@ -307,7 +307,7 @@ Response:
 Example command:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Flow:
@@ -680,19 +680,19 @@ Strategy:
 # 21. Example CLI Usage
 
 ```
-dcli help
+supercli help
 ```
 
 ```
-dcli referential
+supercli referential
 ```
 
 ```
-dcli referential users
+supercli referential users
 ```
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 ---

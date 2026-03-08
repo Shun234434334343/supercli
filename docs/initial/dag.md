@@ -1,4 +1,4 @@
-DCLI (Dynamic CLI) is a config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration and service specifications (OpenAPI, MCP, custom integrations). It is designed for both humans and agents, providing discoverable, introspectable, plannable, and executable commands in a single invocation.
+SUPERCLI (Dynamic CLI) is a config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration and service specifications (OpenAPI, MCP, custom integrations). It is designed for both humans and agents, providing discoverable, introspectable, plannable, and executable commands in a single invocation.
 
 Discoverable — Commands and namespaces can be listed automatically. Agents can query what capabilities exist without prior knowledge.
 
@@ -9,7 +9,7 @@ Plannable — Execution steps (validation, API calls, transformations, dependenc
 Executable — Commands run in one shot; the agent receives deterministic, structured output directly, without requiring a separate execute step.
 
 
-DCLI (Dynamic CLI) is a config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration and service specifications (OpenAPI, MCP, custom integrations). It is designed for both humans and agents, providing discoverable, introspectable, plannable, and executable commands in a single invocation.
+SUPERCLI (Dynamic CLI) is a config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration and service specifications (OpenAPI, MCP, custom integrations). It is designed for both humans and agents, providing discoverable, introspectable, plannable, and executable commands in a single invocation.
 
 Discoverable — Commands and namespaces can be listed automatically. Agents can query what capabilities exist without prior knowledge.
 

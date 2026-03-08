@@ -113,11 +113,11 @@ function buildCommandSkillMarkdown(cmd, options = {}) {
     .trim()
 
   const examples = [
-    `dcli ${cmd.namespace} ${cmd.resource} ${cmd.action}${exampleArgs ? ` ${exampleArgs}` : ""} --json`
+    `supercli ${cmd.namespace} ${cmd.resource} ${cmd.action}${exampleArgs ? ` ${exampleArgs}` : ""} --json`
   ]
 
   if (includeDag) {
-    examples.push(`dcli skills get ${cmd.namespace}.${cmd.resource}.${cmd.action} --show-dag`)
+    examples.push(`supercli skills get ${cmd.namespace}.${cmd.resource}.${cmd.action} --show-dag`)
   }
 
   return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Examples\n\n\`\`\`bash\n${examples.join("\n")}\n\`\`\``
@@ -128,7 +128,7 @@ function buildTeachSkillMarkdown(options = {}) {
 
   const frontmatter = {
     skill_name: "teach_skills_usage",
-    description: "Introduces LLMs to DCLI skills commands and explains how to request and execute skills.",
+    description: "Introduces LLMs to SuperCLI skills commands and explains how to request and execute skills.",
     command: "skills teach",
     arguments: [
       {
@@ -163,7 +163,7 @@ function buildTeachSkillMarkdown(options = {}) {
     ]
   }
 
-  return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nThis skill teaches LLMs how to discover and use DCLI skills:\n\n1. List available skills:\n\n\`\`\`bash\ndcli skills list --json\n\`\`\`\n\n2. Fetch a specific skill:\n\n\`\`\`bash\ndcli skills get <namespace.resource.action> --format skill.md\n\`\`\`\n\n3. Parse YAML frontmatter to understand command, arguments, output schema, and metadata.\n\n4. Execute the command with validated arguments:\n\n\`\`\`bash\ndcli <namespace> <resource> <action> --arg value --json\n\`\`\`\n\n# Examples\n\n\`\`\`bash\ndcli skills teach --format skill.md\ndcli skills teach --format skill.md --show-dag\n\`\`\``
+  return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nThis skill teaches LLMs how to discover and use SuperCLI skills:\n\n1. List available skills:\n\n\`\`\`bash\nsupercli skills list --json\n\`\`\`\n\n2. Fetch a specific skill:\n\n\`\`\`bash\nsupercli skills get <namespace.resource.action> --format skill.md\n\`\`\`\n\n3. Parse YAML frontmatter to understand command, arguments, output schema, and metadata.\n\n4. Execute the command with validated arguments:\n\n\`\`\`bash\nsupercli <namespace> <resource> <action> --arg value --json\n\`\`\`\n\n# Examples\n\n\`\`\`bash\nsupercli skills teach --format skill.md\nsupercli skills teach --format skill.md --show-dag\n\`\`\``
 }
 
 function listSkillsMetadata(config) {
@@ -211,7 +211,7 @@ function handleSkillsCommand(options) {
     const dottedId = positional[2] || (positional[3] && positional[4] ? `${positional[2]}.${positional[3]}.${positional[4]}` : "")
     const parsed = normalizeSkillId(dottedId)
     if (!parsed) {
-      outputError({ code: 85, type: "invalid_argument", message: "Usage: dcli skills get <namespace.resource.action> [--format skill.md]", recoverable: false })
+      outputError({ code: 85, type: "invalid_argument", message: "Usage: supercli skills get <namespace.resource.action> [--format skill.md]", recoverable: false })
       return true
     }
 
@@ -219,7 +219,7 @@ function handleSkillsCommand(options) {
       c.namespace === parsed.namespace && c.resource === parsed.resource && c.action === parsed.action
     )
     if (!cmd) {
-      outputError({ code: 92, type: "resource_not_found", message: `Skill ${parsed.id} not found`, suggestions: ["Run: dcli skills list --json"] })
+      outputError({ code: 92, type: "resource_not_found", message: `Skill ${parsed.id} not found`, suggestions: ["Run: supercli skills list --json"] })
       return true
     }
 

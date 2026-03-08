@@ -1,8 +1,8 @@
-Perfect — that aligns nicely with the goal of making DCLI **LLM-friendly** and **self-documenting**. We can define a pipeline where every DCLI command can export a skill in **SKILL.md format** (Markdown with structured frontmatter), optionally including DAG info and metadata. Here’s how it could work:
+Perfect — that aligns nicely with the goal of making SUPERCLI **LLM-friendly** and **self-documenting**. We can define a pipeline where every SUPERCLI command can export a skill in **SKILL.md format** (Markdown with structured frontmatter), optionally including DAG info and metadata. Here’s how it could work:
 
 ---
 
-## 🧩 DCLI Skills in SKILL.md Format
+## 🧩 SUPERCLI Skills in SKILL.md Format
 
 ### 1. SKILL.md Template
 
@@ -74,10 +74,10 @@ dag:
 1. **Request skill:**
 
 ```bash
-dcli skills get referential.users.fetch --format skill.md
+supercli skills get referential.users.fetch --format skill.md
 ```
 
-2. **DCLI returns:**
+2. **SUPERCLI returns:**
 
 * Structured SKILL.md with YAML frontmatter and examples.
 * Optional DAG included if `--show-dag` is requested.
@@ -103,11 +103,11 @@ dcli skills get referential.users.fetch --format skill.md
 
 ---
 
-If you want, I can **redesign the DCLI + MCP + Skills architecture diagram** to show:
+If you want, I can **redesign the SUPERCLI + MCP + Skills architecture diagram** to show:
 
 * Command execution → DAG computation → SKILL.md generation → MCP streaming → LLM consumption
 
-This would fully visualize **DCLI as a self-describing, agent-friendly OSS CLI platform**.
+This would fully visualize **SUPERCLI as a self-describing, agent-friendly OSS CLI platform**.
 
 Do you want me to do that next?
 
@@ -115,20 +115,20 @@ HUMAN: we should also include a default command to return an initial SKILL that 
 
 
 AI:
-Exactly — we can bake a **“meta-skill”** into DCLI as a default command, which acts like a **starter guide for LLMs** to understand how to fetch and use skills. This is crucial for **self-bootstrapping agent workflows**.
+Exactly — we can bake a **“meta-skill”** into SUPERCLI as a default command, which acts like a **starter guide for LLMs** to understand how to fetch and use skills. This is crucial for **self-bootstrapping agent workflows**.
 
 ---
 
-## 🧩 DCLI Default “Skill Usage” Command
+## 🧩 SUPERCLI Default “Skill Usage” Command
 
 ### 1. Command Name
 
 ```bash
-dcli skills teach
+supercli skills teach
 ```
 
 * Always available out-of-the-box
-* Returns a **starter SKILL.md** describing how to query, parse, and execute DCLI skills
+* Returns a **starter SKILL.md** describing how to query, parse, and execute SUPERCLI skills
 * Optional flags:
 
   * `--format skill.md` (default)
@@ -141,7 +141,7 @@ dcli skills teach
 ````markdown
 ---
 skill_name: teach_skills_usage
-description: "Introduces LLMs to DCLI skills commands and explains how to request and execute skills."
+description: "Introduces LLMs to SUPERCLI skills commands and explains how to request and execute skills."
 command: skills teach
 arguments:
   - name: format
@@ -162,18 +162,18 @@ metadata:
 
 # Instruction
 
-This skill teaches LLMs how to discover and use DCLI skills:
+This skill teaches LLMs how to discover and use SUPERCLI skills:
 
 1. List all available skills:
 
 ```bash
-dcli skills list --json
+supercli skills list --json
 ````
 
 2. Get a specific skill:
 
 ```bash
-dcli skills get <command> --format skill.md
+supercli skills get <command> --format skill.md
 ```
 
 3. Parse YAML frontmatter to understand:
@@ -186,7 +186,7 @@ dcli skills get <command> --format skill.md
 4. Execute the command using structured inputs:
 
 ```bash
-dcli <command> --arg1 value1 --arg2 value2 --json
+supercli <command> --arg1 value1 --arg2 value2 --json
 ```
 
 5. Optionally inspect DAG if `--show-dag` is requested.
@@ -195,10 +195,10 @@ dcli <command> --arg1 value1 --arg2 value2 --json
 
 ```bash
 # Teach an LLM how to use skills
-dcli skills teach --format skill.md
+supercli skills teach --format skill.md
 
 # Teach with DAG included
-dcli skills teach --format skill.md --show-dag
+supercli skills teach --format skill.md --show-dag
 ```
 
 ````
@@ -209,7 +209,7 @@ dcli skills teach --format skill.md --show-dag
 
 | Property | Behavior |
 |----------|---------|
-| **Always available** | Acts as first-entry skill for any LLM using DCLI |
+| **Always available** | Acts as first-entry skill for any LLM using SUPERCLI |
 | **LLM-friendly** | Provides both human-readable and structured instructions |
 | **Self-bootstrapping** | Enables LLMs to learn **how to fetch and use skills** before executing any other commands |
 | **Optional DAG** | Allows advanced agents to inspect execution steps without affecting defaults |
@@ -221,7 +221,7 @@ dcli skills teach --format skill.md --show-dag
 1. LLM queries:
 
 ```bash
-dcli skills teach --format skill.md
+supercli skills teach --format skill.md
 ````
 
 2. Receives **starter SKILL.md**:
@@ -239,8 +239,8 @@ LLM: fetch meta-skill → see `referential users fetch` example → construct co
 
 ---
 
-This ensures **DCLI is truly self-describing and LLM-ready**: any agent can bootstrap itself with **no prior knowledge**.
+This ensures **SUPERCLI is truly self-describing and LLM-ready**: any agent can bootstrap itself with **no prior knowledge**.
 
-I can now **update the full DCLI architecture + MCP + Skills plan** to include this **default meta-skill command**, optional DAG, and streaming for agent consumption — giving you a **complete OSS alternative to gws with self-bootstrapping LLM support**.
+I can now **update the full SUPERCLI architecture + MCP + Skills plan** to include this **default meta-skill command**, optional DAG, and streaming for agent consumption — giving you a **complete OSS alternative to gws with self-bootstrapping LLM support**.
 
 Do you want me to do that next?

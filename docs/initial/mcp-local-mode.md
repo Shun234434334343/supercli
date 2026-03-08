@@ -1,25 +1,25 @@
 # MCP Local Mode
 
-DCLI supports MCP command execution in CLI-local mode without a running DCLI server.
+SUPERCLI supports MCP command execution in CLI-local mode without a running SUPERCLI server.
 
 ## Local MCP Resolution Order
 
-For `adapter: mcp`, DCLI resolves the tool endpoint in this order:
+For `adapter: mcp`, SUPERCLI resolves the tool endpoint in this order:
 
 1. `adapterConfig.command` (stdio command)
 2. `adapterConfig.url` (direct HTTP MCP endpoint)
 3. Local cache entry in `mcp_servers` by `adapterConfig.server`
-4. Remote `/api/mcp` lookup only when `DCLI_SERVER` is set
+4. Remote `/api/mcp` lookup only when `SUPERCLI_SERVER` is set
 
 ## Manage Local MCP Registry
 
 ```bash
-dcli mcp list
-dcli mcp add summarize-local --url http://127.0.0.1:8787
-dcli mcp remove summarize-local
+supercli mcp list
+supercli mcp add summarize-local --url http://127.0.0.1:8787
+supercli mcp remove summarize-local
 ```
 
-These commands only update local cache (`~/.dcli/config.json`).
+These commands only update local cache (`~/.supercli/config.json`).
 
 ## Demo: `ai text summarize` with stdio MCP (no server)
 
@@ -27,7 +27,7 @@ From the repository root:
 
 ```bash
 node examples/mcp-stdio/install-demo.js
-dcli ai text summarize --text "Hello world from local stdio mcp" --json
+supercli ai text summarize --text "Hello world from local stdio mcp" --json
 ```
 
 Expected output shape:

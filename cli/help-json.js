@@ -4,20 +4,20 @@ function buildCapabilities(config, hasServer) {
     config: { subcommands: ["show"] },
     mcp: { subcommands: ["list", "add", "remove"], description: "Manage local MCP server registry" },
     commands: { description: "List all commands" },
-    inspect: { description: "Inspect command details", usage: "dcli inspect <ns> <res> <act>" },
-    plan: { description: "Create execution plan", usage: "dcli plan <ns> <res> <act> [--args]" },
-    execute: { description: "Execute a stored plan", usage: "dcli execute <plan_id>" },
+    inspect: { description: "Inspect command details", usage: "supercli inspect <ns> <res> <act>" },
+    plan: { description: "Create execution plan", usage: "supercli plan <ns> <res> <act> [--args]" },
+    execute: { description: "Execute a stored plan", usage: "supercli execute <plan_id>" },
     skills: {
       description: "Skill discovery and SKILL.md generation",
       subcommands: ["list", "get", "teach"]
     }
   }
-  if (hasServer) commands.sync = { description: "Sync local config from DCLI_SERVER" }
-  if (config.features?.ask || process.env.OPENAI_BASE_URL) commands.ask = { description: "Execute natural language queries", usage: "dcli ask \"<query>\"" }
+  if (hasServer) commands.sync = { description: "Sync local config from SUPERCLI_SERVER" }
+  if (config.features?.ask || process.env.OPENAI_BASE_URL) commands.ask = { description: "Execute natural language queries", usage: "supercli ask \"<query>\"" }
 
   return {
     version: "1.0",
-    name: "dcli",
+    name: "supercli",
     description: "Config-driven, AI-friendly dynamic CLI",
     commands,
     namespaces: [...new Set((config.commands || []).map(c => c.namespace))],

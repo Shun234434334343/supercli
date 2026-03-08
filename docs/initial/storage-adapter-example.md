@@ -1,4 +1,4 @@
-Here’s a **storage adapter design** (example) for DCLI that supports **MongoDB** and **file-based JSON storage**, with a clean, pluggable interface. It keeps the CLI/server storage-agnostic so MongoDB is **optional**.
+Here’s a **storage adapter design** (example) for SUPERCLI that supports **MongoDB** and **file-based JSON storage**, with a clean, pluggable interface. It keeps the CLI/server storage-agnostic so MongoDB is **optional**.
 
 ---
 
@@ -31,7 +31,7 @@ export class MongoAdapter implements StorageAdapter {
   private db: Db;
   private collection: Collection;
 
-  constructor(uri: string, dbName: string = "dcli", collectionName: string = "storage") {
+  constructor(uri: string, dbName: string = "supercli", collectionName: string = "storage") {
     const client = new MongoClient(uri);
     this.db = client.db(dbName);
     this.collection = this.db.collection(collectionName);
@@ -72,7 +72,7 @@ import { join } from "path";
 import { StorageAdapter } from "./storage-adapter";
 
 export class FileAdapter implements StorageAdapter {
-  constructor(private baseDir: string = "./dcli_storage") {}
+  constructor(private baseDir: string = "./supercli_storage") {}
 
   private filePath(key: string) {
     return join(this.baseDir, `${key}.json`);
@@ -117,7 +117,7 @@ export class FileAdapter implements StorageAdapter {
 
 ---
 
-## 4. **Adapter Selection in DCLI**
+## 4. **Adapter Selection in SUPERCLI**
 
 ```ts
 // storage.ts
@@ -126,11 +126,11 @@ import { MongoAdapter } from "./mongo-adapter";
 import { FileAdapter } from "./file-adapter";
 
 export function createStorageAdapter(): StorageAdapter {
-  const useMongo = process.env.DCLI_USE_MONGO === "true";
+  const useMongo = process.env.SUPERCLI_USE_MONGO === "true";
   if (useMongo) {
     return new MongoAdapter(process.env.MONGO_URI || "mongodb://localhost:27017");
   } else {
-    return new FileAdapter(process.env.DCLI_STORAGE_DIR || "./dcli_storage");
+    return new FileAdapter(process.env.SUPERCLI_STORAGE_DIR || "./supercli_storage");
   }
 }
 ```
@@ -145,7 +145,7 @@ export function createStorageAdapter(): StorageAdapter {
 1. **Pluggable** – easy to add Redis, SQLite, or other adapters.
 2. **Optional MongoDB** – no hard dependency for local/dev users.
 3. **OSS-Friendly** – file storage works immediately for open-source demos.
-4. **Unified Interface** – DCLI logic doesn’t care which storage is used.
+4. **Unified Interface** – SUPERCLI logic doesn’t care which storage is used.
 5. **Namespace-Friendly** – `listKeys(prefix)` supports scoped storage per command/project.
 
 ---

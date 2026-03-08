@@ -1,6 +1,6 @@
 # Execution Plans (DAG)
 
-Execution Plans allow DCLI to decouple the intent to execute a command from the actual execution itself. This gives agents (and humans) the ability to dry-run commands, verify correctness, analyze side effects, and explicitly authorize actions.
+Execution Plans allow SUPERCLI to decouple the intent to execute a command from the actual execution itself. This gives agents (and humans) the ability to dry-run commands, verify correctness, analyze side effects, and explicitly authorize actions.
 
 ## Key Features
 
@@ -16,10 +16,10 @@ Execution Plans allow DCLI to decouple the intent to execute a command from the 
 
 ```bash
 # 1. Generate an execution plan without running the command
-dcli plan <namespace> <resource> <action> --arg1 value
+supercli plan <namespace> <resource> <action> --arg1 value
 
 # (Output returns a plan_id and a list of steps)
 
 # 2. Execute the previously created plan
-dcli execute <plan_id>
+supercli execute <plan_id>
 ```

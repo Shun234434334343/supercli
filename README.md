@@ -1,4 +1,4 @@
-# DCLI — Dynamic CLI - SuperCLI - SCLI
+# SuperCLI
 
 Config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration.
 
@@ -22,8 +22,8 @@ Config-driven, AI-friendly CLI that dynamically generates commands from cloud co
 
 ```bash
 # Quick usage (no install, local-only by default)
-npx dcli help
-npx dcli skills teach
+npx supercli help
+npx supercli skills teach
 
 # Install
 npm install
@@ -34,72 +34,72 @@ cp .env.example .env
 # Start server (defaults to local JSON files, no MongoDB required!)
 npm start
 # Or alternatively, start via CLI:
-# dcli --server
+# supercli --server
 
 # Open Web UI
 open http://localhost:3000
 
 # CLI usage
-node cli/dcli.js help
-node cli/dcli.js commands
-node cli/dcli.js <namespace> <resource> <action> [--args]
+node cli/supercli.js help
+node cli/supercli.js commands
+node cli/supercli.js <namespace> <resource> <action> [--args]
 
-# Optional: sync commands from a remote DCLI server
-export DCLI_SERVER=http://localhost:3000
-node cli/dcli.js sync
+# Optional: sync commands from a remote SuperCLI server
+export SUPERCLI_SERVER=http://localhost:3000
+node cli/supercli.js sync
 ```
 
 ## CLI Usage
 
 ```bash
 # Discovery
-dcli help                              # List namespaces
-dcli <namespace>                       # List resources
-dcli <namespace> <resource>            # List actions
+supercli help                              # List namespaces
+supercli <namespace>                       # List resources
+supercli <namespace> <resource>            # List actions
 
 # Inspection
-dcli inspect <ns> <res> <act>          # Command details + schema
-dcli <ns> <res> <act> --schema         # Input/output schema
+supercli inspect <ns> <res> <act>          # Command details + schema
+supercli <ns> <res> <act> --schema         # Input/output schema
 
 # Execution
-dcli <ns> <res> <act> --arg value      # Execute command
-dcli <ns> <res> <act> --compact        # Token-optimized output
+supercli <ns> <res> <act> --arg value      # Execute command
+supercli <ns> <res> <act> --compact        # Token-optimized output
 
 # Plans (DAG)
-dcli plan <ns> <res> <act> [--args]    # Dry-run execution plan
-dcli execute <plan_id>                 # Execute stored plan
+supercli plan <ns> <res> <act> [--args]    # Dry-run execution plan
+supercli execute <plan_id>                 # Execute stored plan
 
 # Skills (LLM bootstrap)
-dcli skills list --json                # Minimal skill metadata (name, description)
-dcli skills get <ns.res.act>           # Emit SKILL.md (default format)
-dcli skills teach                      # Emit starter meta-skill (default format)
-dcli skills get <ns.res.act> --show-dag
+supercli skills list --json                # Minimal skill metadata (name, description)
+supercli skills get <ns.res.act>           # Emit SKILL.md (default format)
+supercli skills teach                      # Emit starter meta-skill (default format)
+supercli skills get <ns.res.act> --show-dag
 
 # Natural Language (AI)
 export OPENAI_BASE_URL=https://api.openai.com/v1     # Enable local AI resolution
-dcli ask "list the posts and summarize them"         # Execute natural language queries
+supercli ask "list the posts and summarize them"         # Execute natural language queries
 
 # Config & Server
-dcli sync                              # Sync local cache from DCLI_SERVER (when set)
-dcli config show                       # Show cache info
-dcli --server                          # Start the DCLI backend server directly
+supercli sync                              # Sync local cache from SUPERCLI_SERVER (when set)
+supercli config show                       # Show cache info
+supercli --server                          # Start the SuperCLI backend server directly
 
 # Local MCP registry (no server required)
-dcli mcp list
-dcli mcp add summarize-local --url http://127.0.0.1:8787
-dcli mcp remove summarize-local
+supercli mcp list
+supercli mcp add summarize-local --url http://127.0.0.1:8787
+supercli mcp remove summarize-local
 
 # Stdio MCP demo (no server required)
 node examples/mcp-stdio/install-demo.js
-dcli ai text summarize --text "Hello world" --json
+supercli ai text summarize --text "Hello world" --json
 
 # Remote MCP SSE/HTTP demo
 node examples/mcp-sse/server.js
 node examples/mcp-sse/install-demo.js
-dcli ai text summarize_remote --text "Hello world" --json
+supercli ai text summarize_remote --text "Hello world" --json
 
 # Agent capability discovery
-dcli --help-json                       # Machine-readable capabilities
+supercli --help-json                       # Machine-readable capabilities
 ```
 
 ## Output Modes

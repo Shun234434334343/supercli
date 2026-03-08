@@ -1,12 +1,12 @@
 {
-  "name": "dynamic-cli",
+  "name": "superacli",
   "version": "1.0.0",
   "description": "Config-driven, AI-friendly dynamic CLI",
   "main": "server/app.js",
   "bin": {
-    "dcli": "./cli/dcli.js",
-    "scli": "./cli/dcli.js",
-    "supercli": "./cli/dcli.js"
+    "dcli": "./cli/supercli.js",
+    "scli": "./cli/supercli.js",
+    "supercli": "./cli/supercli.js"
   },
   "scripts": {
     "start": "node server/app.js",

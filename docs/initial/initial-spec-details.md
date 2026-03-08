@@ -20,7 +20,7 @@ The system has **two binaries**:
 # 1. Project Structure
 
 ```
-dcli/
+supercli/
 
 server/
   app.js
@@ -46,7 +46,7 @@ server/
     app.js
 
 cli/
-  dcli.js
+  supercli.js
   config.js
   executor.js
 
@@ -68,7 +68,7 @@ views                 200
 public/app.js         150
 
 cli
-dcli.js               150
+supercli.js               150
 config.js             120
 executor.js           120
 adapters/*            200
@@ -279,19 +279,19 @@ Response:
 Binary:
 
 ```
-cli/dcli.js
+cli/supercli.js
 ```
 
 Usage:
 
 ```
-dcli <namespace> <resource> <action> [args]
+supercli <namespace> <resource> <action> [args]
 ```
 
 Example:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 ---
@@ -301,7 +301,7 @@ dcli referential users fetch --id 42
 Location:
 
 ```
-~/.dcli/config.json
+~/.supercli/config.json
 ```
 
 Structure:
@@ -354,7 +354,7 @@ async function loadConfig(){
 Example input:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Parse:
@@ -634,7 +634,7 @@ This forces CLI refresh.
 # 19. Example CLI Session
 
 ```
-dcli help
+supercli help
 ```
 
 Output:
@@ -649,7 +649,7 @@ infra
 ---
 
 ```
-dcli referential
+supercli referential
 ```
 
 ```
@@ -661,7 +661,7 @@ groups
 ---
 
 ```
-dcli referential users
+supercli referential users
 ```
 
 ```
@@ -674,7 +674,7 @@ create
 ---
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Result:

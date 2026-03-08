@@ -68,7 +68,7 @@ The CLI only loads **what the user navigates**.
 Example CLI session:
 
 ```
-dcli <TAB>
+supercli <TAB>
 ```
 
 CLI requests:
@@ -94,7 +94,7 @@ Response:
 User continues:
 
 ```
-dcli referential <TAB>
+supercli referential <TAB>
 ```
 
 CLI calls:
@@ -119,7 +119,7 @@ Response:
 Next:
 
 ```
-dcli referential users <TAB>
+supercli referential users <TAB>
 ```
 
 Request:
@@ -145,7 +145,7 @@ Response:
 Finally execution:
 
 ```
-dcli referential users fetch
+supercli referential users fetch
 ```
 
 CLI fetches full command:
@@ -161,13 +161,13 @@ GET /api/command/referential/users/fetch
 Instead of one big config file:
 
 ```
-~/.dcli/
+~/.supercli/
 ```
 
 Use segmented cache.
 
 ```
-~/.dcli/cache/
+~/.supercli/cache/
 
 namespaces.json
 referential.resources.json
@@ -184,7 +184,7 @@ This keeps each cache file tiny.
 Command parsing:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Resolution steps:
@@ -257,7 +257,7 @@ Shell autocomplete simply queries the CLI.
 Example:
 
 ```
-__dcli_complete referential users
+__supercli_complete referential users
 ```
 
 CLI resolves locally from cache or calls:
@@ -327,7 +327,7 @@ CLI can preload frequently used namespaces.
 Example config:
 
 ```
-~/.dcli/profile.json
+~/.supercli/profile.json
 ```
 
 ```
@@ -368,7 +368,7 @@ So a user running **OpenAPI commands** never loads MCP code.
 For frequently used commands, cache the spec:
 
 ```
-~/.dcli/cache/command.hash
+~/.supercli/cache/command.hash
 ```
 
 Next run:
@@ -433,4 +433,4 @@ The CLI stays **tiny and fast**, while the **command universe can grow arbitrari
 
 ---
 
-If you want, I can also show you **one design tweak that would make DCLI extremely attractive to AI agents and MCP ecosystems**, which could position it as a **universal tool registry for LLMs**.
+If you want, I can also show you **one design tweak that would make SUPERCLI extremely attractive to AI agents and MCP ecosystems**, which could position it as a **universal tool registry for LLMs**.

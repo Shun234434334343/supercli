@@ -1,6 +1,6 @@
 # Observability & Traceability
 
-DCLI maintains a rich audit trail to monitor tool utilization natively, eliminating CLI tooling "blind spots".
+SUPERCLI maintains a rich audit trail to monitor tool utilization natively, eliminating CLI tooling "blind spots".
 
 ## Key Features
 
@@ -14,7 +14,7 @@ Observability is enabled entirely passively. The CLI client naturally logs its o
 
 ```bash
 # The CLI automatically records this execution trace
-DCLI_SERVER=http://127.0.0.1:3000 dcli github issues list
+SUPERCLI_SERVER=http://127.0.0.1:3000 supercli github issues list
 
 # The traces can be consumed locally or via REST
 open http://localhost:3000/jobs

@@ -4,7 +4,7 @@ Instead of “a CLI that runs commands”, you get:
 
 **A distributed command runtime where the CLI is just one client.**
 
-That turns DCLI into something closer to a **“Kubernetes for commands / tools / APIs / AI”**.
+That turns SUPERCLI into something closer to a **“Kubernetes for commands / tools / APIs / AI”**.
 
 ---
 
@@ -63,7 +63,7 @@ Every execution becomes a **job**.
 Example:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Creates:
@@ -209,7 +209,7 @@ infra.service.deploy
 billing.invoice.create
 ```
 
-This makes DCLI a **tool registry for agents**.
+This makes SUPERCLI a **tool registry for agents**.
 
 ---
 
@@ -353,7 +353,7 @@ Most tools only solve one layer:
 | LangChain      | AI tools     |
 | GitHub Actions | CI pipelines |
 
-DCLI could unify:
+SUPERCLI could unify:
 
 ```
 APIs
@@ -371,20 +371,20 @@ Under one runtime.
 A single project could show the power.
 
 ```
-dcli import-openapi stripe.json
+supercli import-openapi stripe.json
 ```
 
 Now the CLI instantly supports:
 
 ```
-dcli stripe customers list
-dcli stripe charges create
+supercli stripe customers list
+supercli stripe charges create
 ```
 
 Then:
 
 ```
-dcli workflow create-customer
+supercli workflow create-customer
 ```
 
 Pipeline:
@@ -398,7 +398,7 @@ crm.contact.create
 Then:
 
 ```
-dcli ask "create a customer for john@example.com"
+supercli ask "create a customer for john@example.com"
 ```
 
 And the system routes to commands.

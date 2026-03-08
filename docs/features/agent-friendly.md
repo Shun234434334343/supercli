@@ -1,6 +1,6 @@
 # Agent-Friendly Tooling
 
-DCLI is designed from the ground up to be frictionless for AI agents to discover, understand, and interact with infrastructure.
+SUPERCLI is designed from the ground up to be frictionless for AI agents to discover, understand, and interact with infrastructure.
 
 ## Key Features
 
@@ -15,14 +15,14 @@ DCLI is designed from the ground up to be frictionless for AI agents to discover
 
 ```bash
 # Get all available commands formatted for agents
-dcli --help-json
+supercli --help-json
 
 # Inspect argument and return schemas for a specific command
-dcli <namespace> <resource> <action> --schema
+supercli <namespace> <resource> <action> --schema
 
 # Execute a command and get output in compact, token-saving mode
-dcli <namespace> <resource> <action> --compact
+supercli <namespace> <resource> <action> --compact
 
 # Pipe JSON directly into a command
-echo '{"id": 123}' | dcli <namespace> <resource> <action> --json
+echo '{"id": 123}' | supercli <namespace> <resource> <action> --json
 ```

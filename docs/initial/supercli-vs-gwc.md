@@ -1,4 +1,4 @@
-Here’s a concise comparison between **DCLI** and **[Google Workspace CLI (gws) repository on GitHub](https://www.sourcetrail.com/software/google-workspace-cli-the-ai-first-command-line-for-gmail-drive-and-more/?utm_source=chatgpt.com)** — positioning DCLI as **the OSS alternative you’re aiming for**.
+Here’s a concise comparison between **SUPERCLI** and **[Google Workspace CLI (gws) repository on GitHub](https://www.sourcetrail.com/software/google-workspace-cli-the-ai-first-command-line-for-gmail-drive-and-more/?utm_source=chatgpt.com)** — positioning SUPERCLI as **the OSS alternative you’re aiming for**.
 
 ---
 
@@ -30,9 +30,9 @@ A unified CLI front‑end for Google Workspace APIs (Gmail, Drive, Calendar, She
 
 ---
 
-## 📌 **DCLI — The OSS Alternative**
+## 📌 **SUPERCLI — The OSS Alternative**
 
-DCLI is **architecture‑agnostic** and meant to go well beyond a single API stack. It is designed as:
+SUPERCLI is **architecture‑agnostic** and meant to go well beyond a single API stack. It is designed as:
 
 ### 🧠 1. **Discoverable**
 
@@ -64,7 +64,7 @@ Commands run in one invocation, returning:
 
 ## 🆚 **Key Differences**
 
-| Aspect                | Google Workspace CLI (`gws`)                                                  | DCLI                                                                                  |
+| Aspect                | Google Workspace CLI (`gws`)                                                  | SUPERCLI                                                                                  |
 | --------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | **Scope**             | Google Workspace APIs only                                                    | Universal (any OpenAPI/MCP/custom integration)                                        |
 | **Config Source**     | Google Discovery Service                                                      | Cloud config + OpenAPI specs + custom                                                 |
@@ -75,11 +75,11 @@ Commands run in one invocation, returning:
 
 ---
 
-## 🧠 **Why DCLI as an OSS Alternative**
+## 🧠 **Why SUPERCLI as an OSS Alternative**
 
 **gws** solves the narrow problem of Google Workspace API automation and agent interaction. It is extremely useful for that domain but doesn’t generalize.
 
-**DCLI, by design, is a platform:**
+**SUPERCLI, by design, is a platform:**
 
 * Built to unify *any* API surface into a consistent CLI
 * Not tied to a single ecosystem
@@ -88,7 +88,7 @@ Commands run in one invocation, returning:
 
 In short:
 
-> Where Workspace CLI is **a specialized tool for one suite**, DCLI is **a general OSS platform for building AI‑friendly CLIs across all APIs and automation surfaces**.
+> Where Workspace CLI is **a specialized tool for one suite**, SUPERCLI is **a general OSS platform for building AI‑friendly CLIs across all APIs and automation surfaces**.
 
 ---
 
@@ -97,13 +97,13 @@ In short:
 Both prioritize agent access, but:
 
 * gws is useful where the API surface is already defined and singular (Workspace)
-* DCLI is meant to be the **developer platform** that lets teams define *their own* agent‑friendly CLIs for any backend, without writing code
+* SUPERCLI is meant to be the **developer platform** that lets teams define *their own* agent‑friendly CLIs for any backend, without writing code
 
-This makes **DCLI the open‑source alternative for teams that want agent‑friendly automation everywhere, not just in Google Workspace**. ([SourceTrail][1])
+This makes **SUPERCLI the open‑source alternative for teams that want agent‑friendly automation everywhere, not just in Google Workspace**. ([SourceTrail][1])
 
 ---
 
-If you want, I can sketch a **side‑by‑side UX comparison** — what an agent sees when interacting with gws vs what they see with DCLI for the same hypothetical API.
+If you want, I can sketch a **side‑by‑side UX comparison** — what an agent sees when interacting with gws vs what they see with SUPERCLI for the same hypothetical API.
 
 [1]: https://www.sourcetrail.com/software/google-workspace-cli-the-ai-first-command-line-for-gmail-drive-and-more/?utm_source=chatgpt.com "Google Workspace CLI: AI-first command line for Gmail and Drive"
 [2]: https://openclawai.io/blog/google-workspace-cli-gws-ai-agents/?utm_source=chatgpt.com "Google Just Released a Workspace CLI Built for AI Agents — And It Has an MCP Server | OpenClaw AI"

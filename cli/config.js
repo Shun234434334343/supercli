@@ -2,7 +2,7 @@ const fs = require("fs")
 const path = require("path")
 const os = require("os")
 
-const CACHE_DIR = path.join(os.homedir(), ".dcli")
+const CACHE_DIR = path.join(os.homedir(), ".supercli")
 const CACHE_FILE = path.join(CACHE_DIR, "config.json")
 
 function ensureCacheDir() {
@@ -40,7 +40,7 @@ function ttlValid(cache) {
 }
 
 async function fetchRemoteConfig(server) {
-  if (!server) throw new Error("DCLI_SERVER is not configured")
+  if (!server) throw new Error("SUPERCLI_SERVER is not configured")
   const url = `${server}/api/config`
   const r = await fetch(url)
   if (!r.ok) throw new Error(`Failed to fetch config: ${r.status} ${r.statusText}`)
@@ -117,7 +117,7 @@ async function listMcpServers() {
 async function showConfig() {
   const cache = readCache()
   if (!cache) {
-    return { cached: false, message: "No config cached. Set DCLI_SERVER and run: dcli sync" }
+    return { cached: false, message: "No config cached. Set SUPERCLI_SERVER and run: supercli sync" }
   }
   return {
     version: cache.version,

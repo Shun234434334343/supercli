@@ -4,7 +4,7 @@ Brainstorm with me: A dynamic CLI what defines itself based on a cloud configura
 
 Example:
 
-"dcli referential users fetch" => fetch users
+"supercli referential users fetch" => fetch users
 
 Flow:
 
@@ -35,7 +35,7 @@ The cloud config defines:
 Example command:
 
 ```
-dcli referential users fetch --id 42
+supercli referential users fetch --id 42
 ```
 
 Internally resolves to something like:
@@ -71,7 +71,7 @@ Responsibilities:
 Think:
 
 ```
-dcli
+supercli
  ├── parser
  ├── config-loader
  ├── executor
@@ -137,7 +137,7 @@ execute(command, args, context)
 Example:
 
 ```
-dcli referential users fetch --id 12
+supercli referential users fetch --id 12
 ```
 
 Pipeline:
@@ -151,7 +151,7 @@ Pipeline:
 2️⃣ Load cached config
 
 ```
-~/.dcli/cache/config.json
+~/.supercli/cache/config.json
 ```
 
 3️⃣ TTL expired?
@@ -186,7 +186,7 @@ operationId=getUser
 Cache file:
 
 ```
-~/.dcli/config-cache.json
+~/.supercli/config-cache.json
 ```
 
 Example metadata:
@@ -211,7 +211,7 @@ else:
 Optional:
 
 ```
-dcli config refresh
+supercli config refresh
 ```
 
 ---
@@ -308,7 +308,7 @@ handler: deployLambda
 Allow extensions:
 
 ```
-~/.dcli/plugins/
+~/.supercli/plugins/
 ```
 
 Plugin registers:
@@ -327,7 +327,7 @@ output formatter
 Dynamic help:
 
 ```
-dcli
+supercli
 ```
 
 Output:
@@ -344,7 +344,7 @@ infra
 Then:
 
 ```
-dcli referential
+supercli referential
 ```
 
 Output:
@@ -358,7 +358,7 @@ permissions
 Then:
 
 ```
-dcli referential users
+supercli referential users
 ```
 
 Output:
@@ -396,7 +396,7 @@ auth:
 Stored locally:
 
 ```
-~/.dcli/credentials
+~/.supercli/credentials
 ```
 
 ---
@@ -415,7 +415,7 @@ Support:
 Example:
 
 ```
-dcli referential users list --table
+supercli referential users list --table
 ```
 
 ---
@@ -427,7 +427,7 @@ dcli referential users list --table
 Allow:
 
 ```
-dcli run workflow.yaml
+supercli run workflow.yaml
 ```
 
 Example:
@@ -443,7 +443,7 @@ steps:
 ### AI Assisted CLI
 
 ```
-dcli ask "fetch user 42 and summarize activity"
+supercli ask "fetch user 42 and summarize activity"
 ```
 
 LLM maps to:
@@ -489,9 +489,9 @@ Use cases:
 If productized:
 
 ```
-DCLI
+SUPERCLI
 CommandMesh
-CloudCLI
+Clousupercli
 OpenCommand
 CmdFabric
 ControlPlane CLI
@@ -520,13 +520,13 @@ namespace/resource/action
 Meaning you could also support:
 
 ```
-dcli referential.users.fetch
+supercli referential.users.fetch
 ```
 
 or
 
 ```
-dcli run referential.users.fetch
+supercli run referential.users.fetch
 ```
 
 ---
