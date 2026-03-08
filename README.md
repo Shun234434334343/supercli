@@ -75,6 +75,10 @@ dcli skills get <ns.res.act>           # Emit SKILL.md (default format)
 dcli skills teach                      # Emit starter meta-skill (default format)
 dcli skills get <ns.res.act> --show-dag
 
+# Natural Language (AI)
+export OPENAI_BASE_URL=https://api.openai.com/v1     # Enable local AI resolution
+dcli ask "list the posts and summarize them"         # Execute natural language queries
+
 # Config & Server
 dcli sync                              # Sync local cache from DCLI_SERVER (when set)
 dcli config show                       # Show cache info
@@ -159,6 +163,10 @@ Every command returns a deterministic envelope:
 - Pluggable KV Storage (Local JSON files by default, MongoDB optional)
 - EJS + Vue3 CDN + Tailwind CDN + DaisyUI CDN
 - Zero build tools
+
+## Contributors
+
+Contributions are welcome! If you have ideas for improvements, new adapters, or bug fixes, just send a Pull Request (PR) and I will review it.
 
 ## License
 
