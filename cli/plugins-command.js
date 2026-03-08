@@ -78,7 +78,7 @@ async function handlePluginsCommand(options) {
 
   if (subcommand === "doctor") {
     const name = positional[2]
-    const report = name ? doctorPlugin(name) : { plugins: doctorAllPlugins() }
+    const report = name ? doctorPlugin(name) : doctorAllPlugins()
     output(report)
     return true
   }
