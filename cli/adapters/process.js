@@ -37,6 +37,7 @@ async function execute(cmd, flags) {
   const parsedAsJson = cfg.parseJson !== false
   const includeJsonFlag = cfg.jsonFlag || null
   const timeoutMs = Number(cfg.timeout_ms) > 0 ? Number(cfg.timeout_ms) : 15000
+  const passthroughInteractive = passthroughMode && flags.__passthroughInteractive === true
   const cwd = typeof cfg.cwd === "string" ? cfg.cwd : undefined
   const env = (cfg.env && typeof cfg.env === "object") ? { ...process.env, ...cfg.env } : process.env
 
@@ -69,7 +70,7 @@ async function execute(cmd, flags) {
   }
 
   return new Promise((resolve, reject) => {
-    const child = spawn(binary, args, { stdio: ["ignore", "pipe", "pipe"], cwd, env })
+    const child = spawn(binary, args, { stdio: passthroughInteractive ? "inherit" : ["ignore", "pipe", "pipe"], cwd, env })
     let out = ""
     let err = ""
     let settled = false
@@ -85,10 +86,12 @@ async function execute(cmd, flags) {
       }))
     }, timeoutMs)
 
-    child.stdout.setEncoding("utf-8")
-    child.stderr.setEncoding("utf-8")
-    child.stdout.on("data", chunk => { out += chunk })
-    child.stderr.on("data", chunk => { err += chunk })
+    if (!passthroughInteractive) {
+      child.stdout.setEncoding("utf-8")
+      child.stderr.setEncoding("utf-8")
+      child.stdout.on("data", chunk => { out += chunk })
+      child.stderr.on("data", chunk => { err += chunk })
+    }
 
     child.on("error", e => {
       if (settled) return
@@ -120,6 +123,11 @@ async function execute(cmd, flags) {
           type: "integration_error",
           recoverable: true
         }))
+        return
+      }
+
+      if (passthroughInteractive) {
+        resolve({ ok: true, passthrough: true })
         return
       }
 
