@@ -5,11 +5,13 @@ const path = require("path")
 const {
   addProvider,
   removeProvider,
+  getProvider,
   listProviders,
   syncCatalog,
   listCatalogSkills,
   searchCatalog,
-  getCatalogSkill
+  getCatalogSkill,
+  readIndex
 } = require("../cli/skills-catalog")
 
 describe("skills catalog", () => {
@@ -37,6 +39,8 @@ describe("skills catalog", () => {
 
     const providers = listProviders()
     expect(providers.find(p => p.name === "testkb")).toBeTruthy()
+    expect(getProvider("testkb")).toBeTruthy()
+    expect(getProvider("missing")).toBeNull()
 
     const index = syncCatalog()
     expect(index.skills.length).toBeGreaterThan(0)
@@ -46,6 +50,10 @@ describe("skills catalog", () => {
 
     const searched = searchCatalog("sample", { provider: "testkb" })
     expect(searched.length).toBeGreaterThan(0)
+    
+    // Coverage for line 181
+    const searchedDesc = searchCatalog("description")
+    expect(searchedDesc.length).toBeGreaterThan(0)
 
     const full = getCatalogSkill("testkb:sample_skill")
     expect(full).toBeTruthy()
@@ -53,5 +61,20 @@ describe("skills catalog", () => {
 
     const removed = removeProvider("testkb")
     expect(removed).toBe(true)
+  })
+
+  test("readJson error coverage", () => {
+    const providersFile = path.join(tempHome, "skills-providers.json")
+    fs.writeFileSync(providersFile, "invalid-json")
+    // Should fallback to default providers
+    const providers = listProviders()
+    expect(providers.length).toBeGreaterThan(0)
+  })
+
+  test("readIndex coverage", () => {
+    expect(readIndex().skills).toEqual([])
+    const indexFile = path.join(tempHome, "skills-index.json")
+    fs.writeFileSync(indexFile, "null")
+    expect(readIndex().skills).toEqual([])
   })
 })
