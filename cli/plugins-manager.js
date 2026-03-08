@@ -8,7 +8,31 @@ const {
 } = require("./plugins-store")
 
 const BUNDLED_PLUGINS = {
-  beads: path.resolve(__dirname, "..", "plugins", "beads", "plugin.json")
+  beads: path.resolve(__dirname, "..", "plugins", "beads", "plugin.json"),
+  gwc: path.resolve(__dirname, "..", "plugins", "gwc", "plugin.json")
+}
+
+const PLUGIN_INSTALL_GUIDANCE = {
+  beads: {
+    plugin: "beads",
+    binary: "br",
+    check: "br --version",
+    install_steps: [
+      "curl -fsSL \"https://raw.githubusercontent.com/Dicklesworthstone/beads_rust/main/install.sh?$(date +%s)\" | bash",
+      "br --version"
+    ],
+    note: "Installation is intentionally delegated to your LLM/automation flow (dcli/scli/supercli)."
+  },
+  gwc: {
+    plugin: "gwc",
+    binary: "gws",
+    check: "gws --version",
+    install_steps: [
+      "npm install -g @googleworkspace/cli",
+      "gws --version"
+    ],
+    note: "Installation is intentionally delegated to your LLM/automation flow (dcli/scli/supercli)."
+  }
 }
 
 function commandKey(cmd) {
@@ -88,8 +112,10 @@ function doctorPlugin(name) {
   }
 
   const checks = []
-  if (name === "beads") {
-    checks.push(checkBinary("br"))
+  for (const check of (plugin.checks || [])) {
+    if (check && check.type === "binary" && check.name) {
+      checks.push(checkBinary(check.name))
+    }
   }
 
   return {
@@ -207,17 +233,7 @@ function getPlugin(name) {
 }
 
 function getPluginInstallGuidance(name) {
-  if (name !== "beads") return null
-  return {
-    plugin: "beads",
-    binary: "br",
-    check: "br --version",
-    install_steps: [
-      "curl -fsSL \"https://raw.githubusercontent.com/Dicklesworthstone/beads_rust/main/install.sh?$(date +%s)\" | bash",
-      "br --version"
-    ],
-    note: "Installation is intentionally delegated to your LLM/automation flow (dcli/scli/supercli)."
-  }
+  return PLUGIN_INSTALL_GUIDANCE[name] || null
 }
 
 module.exports = {
