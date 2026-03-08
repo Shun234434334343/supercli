@@ -1,6 +1,13 @@
-# SuperCLI
+# SuperACLI - SuperCLI - DCLI - Super Agentic CLI
 
 Config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration.
+
+## BIN Aliases
+
+- dcli (Original CLI)
+- supercli (Brand)
+- scli (Brand smaller)
+- superacli (What was available) (Super Agent/ic CLI)
 
 ## Architecture
 
