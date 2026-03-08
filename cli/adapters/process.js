@@ -3,7 +3,7 @@ const { spawn } = require("child_process")
 function toCliFlags(flags) {
   const args = []
   for (const [k, v] of Object.entries(flags)) {
-    if (["human", "json", "compact"].includes(k)) continue
+    if (["human", "json", "compact"].includes(k) || k.startsWith("__")) continue
     if (v === true) args.push(`--${k}`)
     else args.push(`--${k}`, String(v))
   }
@@ -16,6 +16,7 @@ async function execute(cmd, flags) {
   if (!binary) throw new Error("Process adapter requires adapterConfig.command")
 
   const baseArgs = Array.isArray(cfg.baseArgs) ? cfg.baseArgs.slice() : []
+  const passthroughMode = cfg.passthrough === true
   const positionalNames = Array.isArray(cfg.positionalArgs) ? cfg.positionalArgs : []
   const parsedAsJson = cfg.parseJson !== false
   const includeJsonFlag = cfg.jsonFlag || null
@@ -24,15 +25,20 @@ async function execute(cmd, flags) {
   const remainingFlags = { ...flags }
   const args = [...baseArgs]
 
-  for (const name of positionalNames) {
-    if (remainingFlags[name] !== undefined) {
-      args.push(String(remainingFlags[name]))
-      delete remainingFlags[name]
+  if (passthroughMode) {
+    const passthroughArgs = Array.isArray(flags.__rawArgs) ? flags.__rawArgs : []
+    args.push(...passthroughArgs)
+  } else {
+    for (const name of positionalNames) {
+      if (remainingFlags[name] !== undefined) {
+        args.push(String(remainingFlags[name]))
+        delete remainingFlags[name]
+      }
     }
-  }
 
-  if (includeJsonFlag) args.push(includeJsonFlag)
-  args.push(...toCliFlags(remainingFlags))
+    if (includeJsonFlag) args.push(includeJsonFlag)
+    args.push(...toCliFlags(remainingFlags))
+  }
 
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, { stdio: ["ignore", "pipe", "pipe"] })
@@ -61,7 +67,8 @@ async function execute(cmd, flags) {
       settled = true
       clearTimeout(timer)
       if (e && e.code === "ENOENT") {
-        reject(Object.assign(new Error(`Missing dependency '${binary}'. Run: dcli beads install steps`), {
+        const help = cfg.missingDependencyHelp || `Run: dcli plugins doctor`
+        reject(Object.assign(new Error(`Missing dependency '${binary}'. ${help}`), {
           code: 85,
           type: "invalid_argument",
           recoverable: false
