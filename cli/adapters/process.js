@@ -1,13 +1,29 @@
-const { spawn } = require("child_process")
+const { spawn, spawnSync } = require("child_process")
 
 function toCliFlags(flags) {
   const args = []
   for (const [k, v] of Object.entries(flags)) {
     if (["human", "json", "compact"].includes(k) || k.startsWith("__")) continue
+    if (v === false || v === undefined || v === null) continue
+    if (Array.isArray(v)) {
+      for (const item of v) {
+        args.push(`--${k}`, String(item))
+      }
+      continue
+    }
     if (v === true) args.push(`--${k}`)
+    else if (typeof v === "object") args.push(`--${k}`, JSON.stringify(v))
     else args.push(`--${k}`, String(v))
   }
   return args
+}
+
+function preflightBinary(binary) {
+  const r = spawnSync("which", [binary], { encoding: "utf-8", timeout: 3000 })
+  if (r.error) {
+    return { ok: false, reason: r.error.message }
+  }
+  return { ok: r.status === 0, reason: (r.stderr || "").trim() }
 }
 
 async function execute(cmd, flags) {
@@ -21,6 +37,18 @@ async function execute(cmd, flags) {
   const parsedAsJson = cfg.parseJson !== false
   const includeJsonFlag = cfg.jsonFlag || null
   const timeoutMs = Number(cfg.timeout_ms) > 0 ? Number(cfg.timeout_ms) : 15000
+  const cwd = typeof cfg.cwd === "string" ? cfg.cwd : undefined
+  const env = (cfg.env && typeof cfg.env === "object") ? { ...process.env, ...cfg.env } : process.env
+
+  const check = preflightBinary(binary)
+  if (!check.ok) {
+    const help = cfg.missingDependencyHelp || `Run: dcli plugins doctor`
+    throw Object.assign(new Error(`Missing dependency '${binary}'. ${help}`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
 
   const remainingFlags = { ...flags }
   const args = [...baseArgs]
@@ -41,7 +69,7 @@ async function execute(cmd, flags) {
   }
 
   return new Promise((resolve, reject) => {
-    const child = spawn(binary, args, { stdio: ["ignore", "pipe", "pipe"] })
+    const child = spawn(binary, args, { stdio: ["ignore", "pipe", "pipe"], cwd, env })
     let out = ""
     let err = ""
     let settled = false
