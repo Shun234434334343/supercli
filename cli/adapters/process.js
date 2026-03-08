@@ -26,6 +26,57 @@ function preflightBinary(binary) {
   return { ok: r.status === 0, reason: (r.stderr || "").trim() }
 }
 
+function buildSafetyViolation(details) {
+  return Object.assign(new Error(`Operation rejected: Cannot run interactive command in a non-TTY environment. Use non-interactive flags instead.${details ? ` ${details}` : ""}`), {
+    code: 91,
+    type: "safety_violation",
+    recoverable: false
+  })
+}
+
+function detectInteractiveFlags(args, interactiveFlags) {
+  const configured = new Set((interactiveFlags || []).map(f => String(f)))
+  if (configured.size === 0) return []
+
+  const hits = new Set()
+  for (const token of args) {
+    const value = String(token)
+    if (configured.has(value)) {
+      hits.add(value)
+      continue
+    }
+
+    if (value.startsWith("--") && value.includes("=")) {
+      const key = value.slice(0, value.indexOf("="))
+      if (configured.has(key)) hits.add(key)
+      continue
+    }
+
+    if (value.startsWith("-") && !value.startsWith("--") && value.length > 2) {
+      for (const ch of value.slice(1)) {
+        const shortFlag = `-${ch}`
+        if (configured.has(shortFlag)) hits.add(shortFlag)
+      }
+    }
+  }
+
+  return [...hits]
+}
+
+function validateNonTtySafety(cfg, args) {
+  const isTty = !!process.stdout.isTTY
+  if (isTty) return
+
+  if (cfg.requiresInteractive === true) {
+    throw buildSafetyViolation("Command requires an interactive TTY session.")
+  }
+
+  const hits = detectInteractiveFlags(args, cfg.interactiveFlags)
+  if (hits.length > 0) {
+    throw buildSafetyViolation(`Blocked interactive flags: ${hits.join(", ")}.`)
+  }
+}
+
 async function execute(cmd, flags) {
   const cfg = cmd.adapterConfig || {}
   const binary = cfg.command
@@ -37,6 +88,7 @@ async function execute(cmd, flags) {
   const parsedAsJson = cfg.parseJson !== false
   const includeJsonFlag = cfg.jsonFlag || null
   const timeoutMs = Number(cfg.timeout_ms) > 0 ? Number(cfg.timeout_ms) : 15000
+  const flagsBeforePositionals = cfg.flagsBeforePositionals === true || binary === "docker"
   const passthroughInteractive = passthroughMode && flags.__passthroughInteractive === true
   const cwd = typeof cfg.cwd === "string" ? cfg.cwd : undefined
   const env = (cfg.env && typeof cfg.env === "object") ? { ...process.env, ...cfg.env } : process.env
@@ -58,16 +110,23 @@ async function execute(cmd, flags) {
     const passthroughArgs = Array.isArray(flags.__rawArgs) ? flags.__rawArgs : []
     args.push(...passthroughArgs)
   } else {
+    const positionalValues = []
     for (const name of positionalNames) {
       if (remainingFlags[name] !== undefined) {
-        args.push(String(remainingFlags[name]))
+        positionalValues.push(String(remainingFlags[name]))
         delete remainingFlags[name]
       }
     }
 
-    if (includeJsonFlag) args.push(includeJsonFlag)
-    args.push(...toCliFlags(remainingFlags))
+    const flagArgs = []
+    if (includeJsonFlag) flagArgs.push(includeJsonFlag)
+    flagArgs.push(...toCliFlags(remainingFlags))
+
+    if (flagsBeforePositionals) args.push(...flagArgs, ...positionalValues)
+    else args.push(...positionalValues, ...flagArgs)
   }
+
+  validateNonTtySafety(cfg, args)
 
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, { stdio: passthroughInteractive ? "inherit" : ["ignore", "pipe", "pipe"], cwd, env })

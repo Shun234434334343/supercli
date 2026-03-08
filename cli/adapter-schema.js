@@ -21,6 +21,11 @@ function validateCommonConfig(adapterName, config) {
   assertType(config.unsafe, "boolean", "unsafe")
   assertType(config.non_interactive, "boolean", "non_interactive")
   assertType(config.cwd, "string", "cwd")
+  assertType(config.safetyLevel, "string", "safetyLevel")
+  if (config.interactiveFlags !== undefined && !Array.isArray(config.interactiveFlags)) {
+    throw asInvalid("adapterConfig.interactiveFlags must be an array")
+  }
+  assertType(config.requiresInteractive, "boolean", "requiresInteractive")
 
   if (config.non_interactive === false) {
     throw asInvalid("Interactive command execution is not supported. Set adapterConfig.non_interactive=true or remove it.")
@@ -67,8 +72,12 @@ function validateAdapterConfig(cmd) {
     if (config.baseArgs !== undefined && !Array.isArray(config.baseArgs)) throw asInvalid("adapterConfig.baseArgs must be an array")
     if (config.positionalArgs !== undefined && !Array.isArray(config.positionalArgs)) throw asInvalid("adapterConfig.positionalArgs must be an array")
     if (config.passthrough !== undefined && typeof config.passthrough !== "boolean") throw asInvalid("adapterConfig.passthrough must be boolean")
+    if (config.flagsBeforePositionals !== undefined && typeof config.flagsBeforePositionals !== "boolean") throw asInvalid("adapterConfig.flagsBeforePositionals must be boolean")
     if (config.missingDependencyHelp !== undefined && typeof config.missingDependencyHelp !== "string") throw asInvalid("adapterConfig.missingDependencyHelp must be string")
     if (config.env !== undefined && (typeof config.env !== "object" || Array.isArray(config.env))) throw asInvalid("adapterConfig.env must be object")
+    if (config.interactiveFlags !== undefined && config.interactiveFlags.some(v => typeof v !== "string")) {
+      throw asInvalid("adapterConfig.interactiveFlags values must be strings")
+    }
     return
   }
 
