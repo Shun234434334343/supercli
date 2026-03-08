@@ -1,14 +1,26 @@
-const { ObjectId } = require("mongodb")
+const { getStorage } = require("../storage/adapter")
 
-async function getCLIConfig(db) {
-  const commands = await db.collection("commands").find().toArray()
-  const version = await db.collection("settings").findOne({ key: "config_version" })
+async function getCLIConfig() {
+  const storage = getStorage()
+  const keys = await storage.listKeys("command:")
+  const commands = await Promise.all(keys.map(k => storage.get(k)))
+  const mcpKeys = await storage.listKeys("mcp:")
+  const mcpServers = await Promise.all(mcpKeys.map(k => storage.get(k)))
+  const specKeys = await storage.listKeys("spec:")
+  const specs = await Promise.all(specKeys.map(k => storage.get(k)))
+  const version = await storage.get("settings:config_version")
 
   return {
-    version: version ? version.value : "1",
+    version: version || "1",
     ttl: 3600,
+    mcp_servers: mcpServers
+      .filter(Boolean)
+      .map(s => ({ name: s.name, url: s.url })),
+    specs: specs
+      .filter(Boolean)
+      .map(s => ({ name: s.name, url: s.url, auth: s.auth || "none" })),
     commands: commands.map(c => ({
-      _id: c._id,
+      _id: c._id, // this will now be the natural key
       namespace: c.namespace,
       resource: c.resource,
       action: c.action,
@@ -20,31 +32,50 @@ async function getCLIConfig(db) {
   }
 }
 
-async function bumpVersion(db) {
-  const doc = await db.collection("settings").findOne({ key: "config_version" })
-  const next = String(parseInt(doc ? doc.value : "0", 10) + 1)
-  await db.collection("settings").updateOne(
-    { key: "config_version" },
-    { $set: { value: next } },
-    { upsert: true }
-  )
+async function bumpVersion() {
+  const storage = getStorage()
+  const current = await storage.get("settings:config_version")
+  const next = String(parseInt(current || "0", 10) + 1)
+  await storage.set("settings:config_version", next)
   return next
 }
 
-async function getNamespaces(db) {
-  return db.collection("commands").distinct("namespace")
+async function getNamespaces() {
+  const storage = getStorage()
+  const keys = await storage.listKeys("command:")
+  const namespaces = new Set()
+  for (const k of keys) {
+    const parts = k.replace("command:", "").split(".")
+    namespaces.add(parts[0])
+  }
+  return Array.from(namespaces)
 }
 
-async function getResources(db, namespace) {
-  return db.collection("commands").distinct("resource", { namespace })
+async function getResources(namespace) {
+  const storage = getStorage()
+  const keys = await storage.listKeys(`command:${namespace}.`)
+  const resources = new Set()
+  for (const k of keys) {
+    const parts = k.replace("command:", "").split(".")
+    resources.add(parts[1])
+  }
+  return Array.from(resources)
 }
 
-async function getActions(db, namespace, resource) {
-  return db.collection("commands").distinct("action", { namespace, resource })
+async function getActions(namespace, resource) {
+  const storage = getStorage()
+  const keys = await storage.listKeys(`command:${namespace}.${resource}.`)
+  const actions = new Set()
+  for (const k of keys) {
+    const parts = k.replace("command:", "").split(".")
+    actions.add(parts[2])
+  }
+  return Array.from(actions)
 }
 
-async function getCommand(db, namespace, resource, action) {
-  return db.collection("commands").findOne({ namespace, resource, action })
+async function getCommand(namespace, resource, action) {
+  const storage = getStorage()
+  return storage.get(`command:${namespace}.${resource}.${action}`)
 }
 
 module.exports = {
