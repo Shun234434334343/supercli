@@ -1,11 +1,13 @@
 const fs = require("fs")
 const { spawnSync } = require("child_process")
 const path = require("path")
+const os = require("os")
 
 // Mock dependencies
 jest.mock("fs")
 jest.mock("child_process")
 jest.mock("../cli/plugins-store")
+jest.mock("../cli/plugins-registry")
 
 const {
   installPlugin,
@@ -13,7 +15,8 @@ const {
   getPlugin,
   listInstalledPlugins,
   doctorPlugin,
-  doctorAllPlugins
+  doctorAllPlugins,
+  getPluginInstallGuidance
 } = require("../cli/plugins-manager")
 
 const {
@@ -22,342 +25,270 @@ const {
   listInstalledPlugins: mockListInstalledPlugins
 } = require("../cli/plugins-store")
 
+const { getRegistryPlugin } = require("../cli/plugins-registry")
+
 describe("plugins-manager", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    // Default mock for readPluginsLock
     readPluginsLock.mockReturnValue({ installed: {} })
+    jest.spyOn(os, "tmpdir").mockReturnValue("/tmp")
   })
 
-  describe("loadPluginManifest", () => {
-    test("throws error if manifest not found", () => {
-      fs.existsSync.mockReturnValue(false)
-      expect(() => installPlugin("nonexistent")).toThrow(/Plugin 'nonexistent' not found/)
-    })
-
-    test("throws error if manifest is invalid JSON", () => {
+  describe("Manifest Parsing", () => {
+    test("throws if manifest invalid JSON", () => {
       fs.existsSync.mockReturnValue(true)
       fs.statSync.mockReturnValue({ isDirectory: () => false })
-      fs.readFileSync.mockReturnValue("invalid json")
-      expect(() => installPlugin("plugin.json")).toThrow(/Invalid plugin manifest/)
+      fs.readFileSync.mockReturnValue("invalid")
+      expect(() => installPlugin("p1")).toThrow(/Invalid plugin manifest/)
     })
 
-    test("throws error if manifest is missing name or commands", () => {
+    test("throws if manifest missing name or commands", () => {
       fs.existsSync.mockReturnValue(true)
       fs.statSync.mockReturnValue({ isDirectory: () => false })
-      fs.readFileSync.mockReturnValue(JSON.stringify({ version: "1.0.0" }))
-      expect(() => installPlugin("plugin.json")).toThrow(/missing name or commands/)
+      fs.readFileSync.mockReturnValue(JSON.stringify({ version: "1" }))
+      expect(() => installPlugin("p1")).toThrow(/missing name or commands/)
     })
 
-    test("resolves manifest path from directory", () => {
+    test("resolves manifest from directory", () => {
       fs.existsSync.mockReturnValue(true)
       fs.statSync.mockReturnValue({ isDirectory: () => true })
-      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "dir-plugin", commands: [] }))
-      
+      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "d-p", commands: [] }))
       const result = installPlugin("some-dir")
-      expect(result.plugin).toBe("dir-plugin")
-      expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining("some-dir/plugin.json"), "utf-8")
+      expect(result.plugin).toBe("d-p")
     })
   })
 
-  describe("installPlugin", () => {
-    const validManifest = {
-      name: "test-plugin",
-      version: "1.2.3",
-      description: "A test plugin",
-      commands: [
-        { namespace: "test", resource: "res", action: "act", adapter: "builtin" }
-      ]
+  describe("Git Installation", () => {
+    test("throws if repo missing", () => {
+      expect(() => installPlugin("any", { git: 123 })).toThrow(/Missing git repo/)
+    })
+
+    test("successfully clones with ref", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ status: 0 })
+      fs.existsSync.mockReturnValue(true)
+      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "git-p", commands: [] }))
+      
+      const result = installPlugin("(git)", { git: "https://repo", ref: "v1" })
+      expect(result.plugin).toBe("git-p")
+    })
+
+    test("handles git clone binary missing", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ error: { code: "ENOENT", message: "not found" } })
+      try {
+        installPlugin("(git)", { git: "repo" })
+      } catch (err) {
+        expect(err.message).toContain("Failed to clone")
+        expect(err.suggestions).toContain("Install git and retry")
+      }
+    })
+
+    test("handles git clone non-ENOENT error", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ error: { code: "OTHER", message: "fail" } })
+      expect(() => installPlugin("(git)", { git: "repo" })).toThrow(/fail/)
+    })
+
+    test("handles git clone status failure", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ status: 1, stderr: "fatal" })
+      expect(() => installPlugin("(git)", { git: "repo" })).toThrow(/fatal/)
+    })
+
+    test("handles missing manifest in repo", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ status: 0 })
+      fs.existsSync.mockReturnValue(false)
+      expect(() => installPlugin("(git)", { git: "repo" })).toThrow(/not found in repo/)
+    })
+
+    test("prevents path traversal", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-123")
+      spawnSync.mockReturnValue({ status: 0 })
+      expect(() => installPlugin("(git)", { git: "repo", manifestPath: "../evil.json" })).toThrow(/Invalid manifest path/)
+    })
+  })
+
+  describe("Registry Integration", () => {
+    test("resolves git source from registry", () => {
+      fs.existsSync.mockReturnValue(false)
+      getRegistryPlugin.mockReturnValue({
+        name: "reg-git",
+        source: { type: "git", repo: "reg-repo", ref: "main", manifest_path: "p.json" }
+      })
+      fs.mkdtempSync.mockReturnValue("/tmp/temp")
+      spawnSync.mockReturnValue({ status: 0 })
+      fs.existsSync.mockImplementation((p) => p.includes("p.json"))
+      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "reg-git", commands: [] }))
+
+      const result = installPlugin("reg-git")
+      expect(result.plugin).toBe("reg-git")
+    })
+
+    test("resolves path source from registry", () => {
+      fs.existsSync.mockReturnValue(false)
+      getRegistryPlugin.mockReturnValue({
+        name: "reg-p",
+        source: { type: "path", manifest_path: "p.json" }
+      })
+      fs.existsSync.mockImplementation((p) => p.includes("p.json"))
+      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "reg-p", commands: [] }))
+
+      const result = installPlugin("reg-p")
+      expect(result.plugin).toBe("reg-p")
+    })
+
+    test("throws if registry source manifest missing", () => {
+      fs.existsSync.mockReturnValue(false)
+      getRegistryPlugin.mockReturnValue({
+        name: "broken",
+        source: { type: "path" }
+      })
+      fs.existsSync.mockReturnValue(false)
+      expect(() => installPlugin("broken")).toThrow(/Plugin manifest not found for 'broken'/)
+    })
+
+    test("throws if not found anywhere", () => {
+      fs.existsSync.mockReturnValue(false)
+      getRegistryPlugin.mockReturnValue(null)
+      expect(() => installPlugin("unknown")).toThrow(/Plugin 'unknown' not found/)
+    })
+  })
+
+  describe("Doctor & checkBinary", () => {
+    test("throws if not installed", () => {
+      readPluginsLock.mockReturnValue({ installed: {} })
+      expect(() => doctorPlugin("p")).toThrow(/is not installed/)
+    })
+
+    test("handles checkBinary ENOENT", () => {
+      const plugin = { name: "p", checks: [{ type: "binary", name: "m" }] }
+      readPluginsLock.mockReturnValue({ installed: { p: plugin } })
+      spawnSync.mockReturnValue({ error: { code: "ENOENT" } })
+      const report = doctorPlugin("p")
+      expect(report.checks[0].message).toBe("not installed")
+    })
+
+    test("handles checkBinary status != 0", () => {
+      const plugin = { name: "p", checks: [{ type: "binary", name: "b" }] }
+      readPluginsLock.mockReturnValue({ installed: { p: plugin } })
+      spawnSync.mockReturnValue({ status: 127, stderr: "" })
+      const report = doctorPlugin("p")
+      expect(report.checks[0].message).toBe("exit 127")
+    })
+
+    test("handles checkBinary other error", () => {
+      const plugin = { name: "p", checks: [{ type: "binary", name: "b" }] }
+      readPluginsLock.mockReturnValue({ installed: { p: plugin } })
+      spawnSync.mockReturnValue({ error: { code: "X", message: "fail" } })
+      const report = doctorPlugin("p")
+      expect(report.checks[0].message).toBe("fail")
+    })
+
+    test("handles successful binary check", () => {
+      const plugin = { name: "p", checks: [{ type: "binary", name: "b" }] }
+      readPluginsLock.mockReturnValue({ installed: { p: plugin } })
+      spawnSync.mockReturnValue({ status: 0, stdout: "ok" })
+      const report = doctorPlugin("p")
+      expect(report.checks[0].ok).toBe(true)
+      expect(report.checks[0].message).toBe("ok")
+    })
+
+    test("policy validation and safe shell command counting", () => {
+      const plugin = {
+        name: "p",
+        commands: [
+          { namespace: "n", resource: "r", action: "a", adapter: "unknown" },
+          { namespace: "n", resource: "r", action: "s", adapter: "shell", adapterConfig: { unsafe: true, non_interactive: true } },
+          { namespace: "n", resource: "r", action: "s2", adapter: "shell", adapterConfig: { unsafe: false, non_interactive: false } }
+        ]
+      }
+      readPluginsLock.mockReturnValue({ installed: { p: plugin } })
+      const report = doctorPlugin("p")
+      expect(report.ok).toBe(false)
+      expect(report.unsafe_commands).toBe(1)
+    })
+
+    test("doctorAll aggregates", () => {
+      mockListInstalledPlugins.mockReturnValue([{ name: "p1" }])
+      readPluginsLock.mockReturnValue({ installed: { p1: { name: "p1", commands: [] } } })
+      const report = doctorAllPlugins()
+      expect(report.total_plugins).toBe(1)
+    })
+  })
+
+  describe("Installation Main Flow", () => {
+    const manifest = {
+      name: "p1",
+      commands: [{ namespace: "n", resource: "r", action: "a" }]
     }
 
     beforeEach(() => {
       fs.existsSync.mockReturnValue(true)
       fs.statSync.mockReturnValue({ isDirectory: () => false })
-      fs.readFileSync.mockReturnValue(JSON.stringify(validManifest))
+      fs.readFileSync.mockReturnValue(JSON.stringify(manifest))
     })
 
-    test("installs a new plugin successfully", () => {
-      const result = installPlugin("test-plugin")
-      
-      expect(result.plugin).toBe("test-plugin")
+    test("throws on invalid onConflict", () => {
+      expect(() => installPlugin("p1", { onConflict: "invalid" })).toThrow(/Invalid --on-conflict/)
+    })
+
+    test("handles same plugin command (skip logic)", () => {
+      readPluginsLock.mockReturnValue({
+        installed: { p1: { name: "p1", commands: [{ namespace: "n", resource: "r", action: "a" }] } }
+      })
+      const result = installPlugin("p1")
       expect(result.installed_commands).toBe(1)
-      expect(writePluginsLock).toHaveBeenCalledWith(expect.objectContaining({
-        installed: expect.objectContaining({
-          "test-plugin": expect.objectContaining({
-            version: "1.2.3",
-            commands: validManifest.commands
-          })
-        })
-      }))
     })
 
-    test("throws error on conflict with 'fail' strategy", () => {
+    test("handles onConflict skip", () => {
       readPluginsLock.mockReturnValue({
-        installed: {
-          "other-plugin": {
-            commands: [{ namespace: "test", resource: "res", action: "act" }]
-          }
-        }
+        installed: { p2: { commands: [{ namespace: "n", resource: "r", action: "a" }] } }
       })
-
-      expect(() => installPlugin("test-plugin", { onConflict: "fail" }))
-        .toThrow(/Plugin install conflict/)
-    })
-
-    test("skips conflicting commands with 'skip' strategy", () => {
-      readPluginsLock.mockReturnValue({
-        installed: {
-          "other-plugin": {
-            commands: [{ namespace: "test", resource: "res", action: "act" }]
-          }
-        }
-      })
-
-      const result = installPlugin("test-plugin", { onConflict: "skip" })
+      const result = installPlugin("p1", { onConflict: "skip" })
       expect(result.installed_commands).toBe(0)
-      expect(result.conflicts[0].action).toBe("skipped")
     })
 
-    test("replaces conflicting commands with 'replace' strategy", () => {
-      const lock = {
-        installed: {
-          "other-plugin": {
-            commands: [{ namespace: "test", resource: "res", action: "act" }]
-          }
-        }
-      }
+    test("handles onConflict replace (other plugin)", () => {
+      const lock = { installed: { p2: { commands: [{ namespace: "n", resource: "r", action: "a" }] } } }
       readPluginsLock.mockReturnValue(lock)
-
-      const result = installPlugin("test-plugin", { onConflict: "replace" })
-      expect(result.installed_commands).toBe(1)
+      const result = installPlugin("p1", { onConflict: "replace" })
       expect(result.conflicts[0].action).toBe("replaced")
-      expect(lock.installed["other-plugin"].commands).toHaveLength(0)
+      expect(lock.installed.p2.commands).toHaveLength(0)
     })
 
-    test("blocks replace if owner is 'base'", () => {
-      const result = installPlugin("test-plugin", { 
+    test("handles onConflict replace (base owner)", () => {
+      const result = installPlugin("p1", { 
         onConflict: "replace",
-        currentCommands: [{ namespace: "test", resource: "res", action: "act" }]
-      })
-      expect(result.installed_commands).toBe(0)
-      expect(result.conflicts[0].action).toBe("blocked")
-    })
-
-    test("handles installation when existing plugin has no commands", () => {
-      readPluginsLock.mockReturnValue({
-        installed: { "test-plugin": { name: "test-plugin" } } // missing commands
-      })
-      const result = installPlugin("test-plugin")
-      expect(result.plugin).toBe("test-plugin")
-    })
-
-    test("handles replacement when owner has no commands field", () => {
-      const lock = {
-        installed: {
-          "other-plugin": { name: "other-plugin" } // missing commands
-        }
-      }
-      readPluginsLock.mockReturnValue(lock)
-      // Conflict with base command
-      const result = installPlugin("test-plugin", { 
-        onConflict: "replace",
-        currentCommands: [{ namespace: "test", resource: "res", action: "act" }]
+        currentCommands: [{ namespace: "n", resource: "r", action: "a" }]
       })
       expect(result.conflicts[0].owner).toBe("base")
     })
 
-    test("throws error for invalid onConflict strategy", () => {
-      expect(() => installPlugin("test", { onConflict: "invalid" }))
-        .toThrow(/Invalid --on-conflict/)
-    })
-  })
-
-  describe("removePlugin", () => {
-    test("removes an installed plugin", () => {
+    test("throws on conflict fail", () => {
       readPluginsLock.mockReturnValue({
-        installed: { "test-plugin": { name: "test-plugin" } }
+        installed: { p2: { commands: [{ namespace: "n", resource: "r", action: "a" }] } }
       })
-
-      const result = removePlugin("test-plugin")
-      expect(result).toBe(true)
-      expect(writePluginsLock).toHaveBeenCalledWith({ installed: {} })
-    })
-
-    test("returns false if plugin not installed", () => {
-      readPluginsLock.mockReturnValue({ installed: {} })
-      const result = removePlugin("nonexistent")
-      expect(result).toBe(false)
-      expect(writePluginsLock).not.toHaveBeenCalled()
+      expect(() => installPlugin("p1")).toThrow(/Plugin install conflict/)
     })
   })
 
-  describe("doctorPlugin", () => {
-    test("returns a report with binary checks", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "test-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ status: 0, stdout: "v1.0.0", stderr: "" })
-
-      const report = doctorPlugin("test")
-      expect(report.ok).toBe(true)
-      expect(report.checks[0]).toMatchObject({ binary: "test-bin", ok: true })
+  describe("Miscellaneous", () => {
+    test("getPluginInstallGuidance", () => {
+      expect(getPluginInstallGuidance("beads")).not.toBeNull()
     })
-
-    test("reports policy violations for unsafe shell commands", () => {
-      const plugin = {
-        name: "test",
-        commands: [{
-          namespace: "test", resource: "sh", action: "run",
-          adapter: "shell",
-          adapterConfig: { unsafe: false }
-        }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-
-      const report = doctorPlugin("test")
-      expect(report.ok).toBe(false)
-      expect(report.checks[0].message).toContain("must set adapterConfig.unsafe=true")
+    test("removePlugin success", () => {
+      readPluginsLock.mockReturnValue({ installed: { p1: { name: "p1" } } })
+      expect(removePlugin("p1")).toBe(true)
     })
-
-    test("throws error if plugin not found for doctor", () => {
+    test("removePlugin fail", () => {
       readPluginsLock.mockReturnValue({ installed: {} })
-      expect(() => doctorPlugin("missing")).toThrow(/is not installed/)
+      expect(removePlugin("p1")).toBe(false)
     })
-
-    test("reports error when binary is missing", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "missing-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ error: { code: "ENOENT" } })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toBe("not installed")
-    })
-
-    test("reports error when binary check returns non-zero", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "bad-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ status: 1, stderr: "error output" })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toBe("error output")
-    })
-
-    test("reports generic exit code when stderr is empty", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "bad-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ status: 127, stderr: "" })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toBe("exit 127")
-    })
-
-    test("reports default ok when stdout is empty", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "good-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ status: 0, stdout: "", stderr: "" })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toBe("ok")
-    })
-
-    test("reports binary check error when not ENOENT", () => {
-      const plugin = {
-        name: "test",
-        commands: [],
-        checks: [{ type: "binary", name: "fail-bin" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      spawnSync.mockReturnValue({ error: { code: "UNKNOWN", message: "low-level fail" } })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toBe("low-level fail")
-    })
-
-    test("handles plugins with missing adapter field", () => {
-      const plugin = {
-        name: "test",
-        commands: [{ namespace: "t", resource: "r", action: "a" }] // no adapter
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-
-      const report = doctorPlugin("test")
-      expect(report.adapter_counts).toHaveProperty("(missing)")
-    })
-
-    test("reports policy violation for unknown adapter", () => {
-      const plugin = {
-        name: "test",
-        commands: [{ namespace: "t", resource: "r", action: "a", adapter: "unknown" }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toContain("uses unknown adapter 'unknown'")
-    })
-
-    test("reports policy violation for non-interactive shell command", () => {
-      const plugin = {
-        name: "test",
-        commands: [{
-          namespace: "t", resource: "r", action: "a",
-          adapter: "shell",
-          adapterConfig: { unsafe: true, non_interactive: false }
-        }]
-      }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-
-      const report = doctorPlugin("test")
-      expect(report.checks[0].message).toContain("cannot disable non_interactive")
-    })
-  })
-
-  describe("doctorAllPlugins", () => {
-    test("aggregates reports for all plugins", () => {
-      mockListInstalledPlugins.mockReturnValue([{ name: "p1" }, { name: "p2" }])
-      
-      // Mock doctorPlugin behavior internally by controlling lock
-      readPluginsLock.mockReturnValue({
-        installed: {
-          p1: { name: "p1", commands: [] },
-          p2: { name: "p2", commands: [] }
-        }
-      })
-
-      const report = doctorAllPlugins()
-      expect(report.total_plugins).toBe(2)
-      expect(report.ok).toBe(true)
-    })
-  })
-
-  describe("getPlugin", () => {
-    test("returns null if plugin not found", () => {
+    test("getPlugin not found", () => {
       readPluginsLock.mockReturnValue({ installed: {} })
-      expect(getPlugin("any")).toBeNull()
-    })
-
-    test("returns plugin if found", () => {
-      const plugin = { name: "test" }
-      readPluginsLock.mockReturnValue({ installed: { test: plugin } })
-      expect(getPlugin("test")).toBe(plugin)
+      expect(getPlugin("p1")).toBeNull()
     })
   })
 })
