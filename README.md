@@ -1,0 +1,135 @@
+# DCLI — Dynamic CLI
+
+Config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration.
+
+## Architecture
+
+```
+         Web UI (EJS + Vue3 + DaisyUI)
+                    │
+                REST API
+                    │
+           NodeJS + MongoDB
+                    │
+              CLI Runtime
+                    │
+          ┌────────┼────────┐
+       OpenAPI    HTTP     MCP
+       Adapter   Adapter  Adapter
+```
+
+## Quick Start
+
+```bash
+# Install
+npm install
+
+# Configure (copy and edit)
+cp .env.example .env
+
+# Start server (requires MongoDB)
+npm start
+
+# Open Web UI
+open http://localhost:3000
+
+# CLI usage
+export DCLI_SERVER=http://localhost:3000
+node cli/dcli.js help
+node cli/dcli.js commands
+node cli/dcli.js <namespace> <resource> <action> [--args]
+```
+
+## CLI Usage
+
+```bash
+# Discovery
+dcli help                              # List namespaces
+dcli <namespace>                       # List resources
+dcli <namespace> <resource>            # List actions
+
+# Inspection
+dcli inspect <ns> <res> <act>          # Command details + schema
+dcli <ns> <res> <act> --schema         # Input/output schema
+
+# Execution
+dcli <ns> <res> <act> --arg value      # Execute command
+dcli <ns> <res> <act> --compact        # Token-optimized output
+
+# Plans (DAG)
+dcli plan <ns> <res> <act> [--args]    # Dry-run execution plan
+dcli execute <plan_id>                 # Execute stored plan
+
+# Config
+dcli config refresh                    # Force config reload
+dcli config show                       # Show cache info
+
+# Agent capability discovery
+dcli --help-json                       # Machine-readable capabilities
+```
+
+## Output Modes
+
+| Flag        | Output                                    |
+|-------------|-------------------------------------------|
+| (default)   | JSON if piped, human-readable if TTY      |
+| `--json`    | Structured JSON envelope                  |
+| `--human`   | Formatted tables and key-value output     |
+| `--compact` | Compressed JSON (shortened keys)          |
+
+## Output Envelope
+
+Every command returns a deterministic envelope:
+
+```json
+{
+  "version": "1.0",
+  "command": "namespace.resource.action",
+  "duration_ms": 42,
+  "data": { ... }
+}
+```
+
+## Exit Codes
+
+| Code    | Type                | Action                     |
+|---------|---------------------|----------------------------|
+| 0       | success             | Proceed                    |
+| 82      | validation_error    | Fix input                  |
+| 85      | invalid_argument    | Fix argument               |
+| 92      | resource_not_found  | Try different resource     |
+| 105     | integration_error   | Retry with backoff         |
+| 110     | internal_error      | Report bug                 |
+
+## API Endpoints
+
+| Method | Endpoint                      | Description              |
+|--------|-------------------------------|--------------------------|
+| GET    | `/api/config`                 | Full CLI config          |
+| GET    | `/api/tree`                   | List namespaces          |
+| GET    | `/api/tree/:ns`               | List resources           |
+| GET    | `/api/tree/:ns/:res`          | List actions             |
+| GET    | `/api/command/:ns/:res/:act`  | Full command spec        |
+| CRUD   | `/api/commands`               | Manage commands          |
+| CRUD   | `/api/specs`                  | Manage OpenAPI specs     |
+| CRUD   | `/api/mcp`                    | Manage MCP servers       |
+| CRUD   | `/api/plans`                  | Execution plans          |
+| GET    | `/api/jobs`                   | Execution history        |
+| GET    | `/api/jobs/stats`             | Aggregate stats          |
+
+## Adapters
+
+- **http** — Raw HTTP requests (method, url, headers)
+- **openapi** — Resolves operation from OpenAPI spec
+- **mcp** — Calls MCP server tools
+
+## Tech Stack
+
+- NodeJS + Express
+- MongoDB (native driver, no ODM)
+- EJS + Vue3 CDN + Tailwind CDN + DaisyUI CDN
+- Zero build tools
+
+## License
+
+MIT
