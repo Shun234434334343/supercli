@@ -49,3 +49,5 @@ Expected output shape:
 
 - `examples/mcp-stdio/server.js` — mock stdio MCP server implementing tool `summarize`
 - `examples/mcp-stdio/install-demo.js` — installs local demo command `ai.text.summarize`
+
+For remote MCP over HTTP + SSE, see `docs/mcp-sse-mode.md`.
