@@ -2,6 +2,9 @@
 
 const { loadConfig, refreshConfig, showConfig } = require("./config")
 const { execute } = require("./executor")
+const {
+  handleSkillsCommand
+} = require("./skills")
 
 const SERVER = process.env.DCLI_SERVER || "http://localhost:3000"
 const isTTY = process.stdout.isTTY
@@ -25,7 +28,7 @@ for (let i = 0; i < rawArgs.length; i++) {
 
 const humanMode = flags.human || (isTTY && !flags.json && !flags.compact && !flags.schema && !flags["help-json"])
 const compactMode = !!flags.compact
-const RESERVED_FLAGS = ["human", "json", "compact", "schema", "help-json", "no-color", "show-dag"]
+const RESERVED_FLAGS = ["human", "json", "compact", "schema", "help-json", "no-color", "show-dag", "format"]
 
 // ─── Output Helpers ─────────────────────────────────────────────
 
@@ -148,7 +151,11 @@ async function main() {
           commands: { description: "List all commands" },
           inspect: { description: "Inspect command details", usage: "dcli inspect <ns> <res> <act>" },
           plan: { description: "Create execution plan", usage: "dcli plan <ns> <res> <act> [--args]" },
-          execute: { description: "Execute a stored plan", usage: "dcli execute <plan_id>" }
+          execute: { description: "Execute a stored plan", usage: "dcli execute <plan_id>" },
+          skills: {
+            description: "Skill discovery and SKILL.md generation",
+            subcommands: ["list", "get", "teach"]
+          }
         },
         namespaces: [...new Set(config.commands.map(c => c.namespace))],
         total_commands: config.commands.length,
@@ -159,7 +166,8 @@ async function main() {
           "--compact": "Compressed JSON for token optimization",
           "--schema": "Show input/output schema for a command",
           "--help-json": "Machine-readable capability discovery",
-          "--show-dag": "Include execution DAG in output"
+          "--show-dag": "Include execution DAG in output",
+          "--format": "Output format for selected commands"
         },
         exit_codes: {
           "0": "success",
@@ -189,6 +197,7 @@ async function main() {
           })
         })
         console.log("\n  Usage: dcli <namespace> <resource> <action> [--args]")
+        console.log("  Skills: dcli skills list | dcli skills get <ns.res.act> | dcli skills teach")
         console.log("  Flags: --json | --human | --compact | --schema | --help-json\n")
       } else {
         output({
@@ -219,6 +228,13 @@ async function main() {
         return
       }
       outputError({ code: 85, type: "invalid_argument", message: "Unknown config subcommand. Use: refresh, show", recoverable: false })
+      return
+    }
+
+    // ── skills ──
+    if (positional[0] === "skills") {
+      const config = await loadConfig(SERVER)
+      handleSkillsCommand({ positional, flags, config, humanMode, output, outputHumanTable, outputError })
       return
     }
 

@@ -60,6 +60,12 @@ dcli <ns> <res> <act> --compact        # Token-optimized output
 dcli plan <ns> <res> <act> [--args]    # Dry-run execution plan
 dcli execute <plan_id>                 # Execute stored plan
 
+# Skills (LLM bootstrap)
+dcli skills list --json                # Minimal skill metadata (name, description)
+dcli skills get <ns.res.act>           # Emit SKILL.md (default format)
+dcli skills teach                      # Emit starter meta-skill (default format)
+dcli skills get <ns.res.act> --show-dag
+
 # Config
 dcli config refresh                    # Force config reload
 dcli config show                       # Show cache info

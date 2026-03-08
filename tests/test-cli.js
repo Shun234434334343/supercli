@@ -108,6 +108,39 @@ test("commands --json lists all commands", () => {
   assert(d.commands.length > 0, "should have at least 1 command")
 })
 
+// ── skills list ──
+test("skills list --json returns minimal metadata", () => {
+  const r = run("skills list --json")
+  assert(r.ok, "skills list should succeed")
+  const d = parse(r)
+  assert(Array.isArray(d.skills), "should return skills array")
+  assert(d.skills.length > 0, "should include at least one skill")
+  const first = d.skills[0]
+  assert(Object.keys(first).sort().join(",") === "description,name", "skill metadata should only include name and description")
+})
+
+// ── skills teach ──
+test("skills teach defaults to skill.md output", () => {
+  const r = run("skills teach")
+  assert(r.ok, "skills teach should succeed")
+  assert(r.output.startsWith("---"), "should start with frontmatter")
+  assert(r.output.includes("skill_name: \"teach_skills_usage\""), "should include teach skill name")
+})
+
+// ── skills get ──
+test("skills get defaults to skill.md output", () => {
+  const r = run("skills get test.items.list")
+  assert(r.ok, "skills get should succeed")
+  assert(r.output.startsWith("---"), "should start with frontmatter")
+  assert(r.output.includes("command: \"test items list\""), "should include command field")
+})
+
+test("skills get can include DAG section", () => {
+  const r = run("skills get test.items.list --show-dag")
+  assert(r.ok, "skills get with dag should succeed")
+  assert(r.output.includes("dag:"), "should include dag section")
+})
+
 // ── namespace listing ──
 test("namespace listing returns resources", () => {
   const r = run("test --json")
