@@ -6,6 +6,24 @@ const specCache = {}
 async function fetchSpec(specName, context) {
   if (specCache[specName]) return specCache[specName]
 
+  const localSpecs = context.config && Array.isArray(context.config.specs) ? context.config.specs : []
+  const localSpec = localSpecs.find(s => s && s.name === specName)
+  if (localSpec) {
+    const sr = await fetch(localSpec.url)
+    if (!sr.ok) throw new Error(`Failed to fetch OpenAPI spec from ${localSpec.url}: ${sr.status}`)
+    const specDoc = await sr.json()
+    specCache[specName] = { ...specDoc, _auth: localSpec.auth }
+    return specCache[specName]
+  }
+
+  if (!context.server) {
+    throw Object.assign(new Error(`OpenAPI spec '${specName}' not found in local config. Run dcli sync to load specs.`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
   // Fetch spec URL from server
   const r = await fetch(`${context.server}/api/specs?format=json`)
   if (!r.ok) throw new Error(`Failed to fetch specs list: ${r.status}`)
