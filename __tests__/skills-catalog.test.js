@@ -77,4 +77,22 @@ describe("skills catalog", () => {
     fs.writeFileSync(indexFile, "null")
     expect(readIndex().skills).toEqual([])
   })
+
+  test("remote_static provider is indexed", () => {
+    addProvider({
+      name: "agency-agents",
+      type: "remote_static",
+      enabled: true,
+      entries: [
+        {
+          id: "engineering.engineering-frontend-developer",
+          name: "Frontend Developer",
+          source_url: "https://raw.githubusercontent.com/msitarzewski/agency-agents/main/engineering/engineering-frontend-developer.md"
+        }
+      ]
+    })
+
+    const index = syncCatalog()
+    expect(index.skills.find(s => s.id === "agency-agents:engineering.engineering-frontend-developer")).toBeTruthy()
+  })
 })
