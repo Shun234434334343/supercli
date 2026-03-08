@@ -1,15 +1,20 @@
 const { Router } = require("express")
-const { ObjectId } = require("mongodb")
-const { getDb } = require("../db")
+const { getStorage } = require("../storage/adapter")
 const { bumpVersion } = require("../services/configService")
 
 const router = Router()
 
-// GET /api/specs — list or render page
+async function getAllSpecs() {
+  const storage = getStorage()
+  const keys = await storage.listKeys("spec:")
+  const specs = await Promise.all(keys.map(k => storage.get(k)))
+  return specs.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// GET /api/specs
 router.get("/", async (req, res) => {
   try {
-    const db = getDb()
-    const specs = await db.collection("specs").find().sort({ name: 1 }).toArray()
+    const specs = await getAllSpecs()
     if (req.query.format !== "json" && req.accepts("html") && !req.xhr && !req.headers["x-requested-with"]) {
       return res.render("specs", { specs })
     }
@@ -22,11 +27,12 @@ router.get("/", async (req, res) => {
 // POST /api/specs
 router.post("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const { name, url, auth } = req.body
-    const doc = { name, url, auth: auth || "none", createdAt: new Date() }
-    await db.collection("specs").insertOne(doc)
-    await bumpVersion(db)
+    const key = `spec:${name}`
+    const doc = { _id: key, name, url, auth: auth || "none", createdAt: new Date() }
+    await storage.set(key, doc)
+    await bumpVersion()
     if (req.headers["content-type"]?.includes("urlencoded")) {
       return res.redirect("/api/specs")
     }
@@ -39,13 +45,18 @@ router.post("/", async (req, res) => {
 // PUT /api/specs/:id
 router.put("/:id", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
     const { name, url, auth } = req.body
-    await db.collection("specs").updateOne(
-      { _id: new ObjectId(req.params.id) },
-      { $set: { name, url, auth: auth || "none" } }
-    )
-    await bumpVersion(db)
+    
+    const newKey = `spec:${name}`
+    if (newKey !== id) {
+      await storage.delete(id)
+    }
+
+    const doc = { _id: newKey, name, url, auth: auth || "none" }
+    await storage.set(newKey, doc)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -55,9 +66,10 @@ router.put("/:id", async (req, res) => {
 // DELETE /api/specs/:id
 router.delete("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    await db.collection("specs").deleteOne({ _id: new ObjectId(req.params.id) })
-    await bumpVersion(db)
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    await storage.delete(id)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })

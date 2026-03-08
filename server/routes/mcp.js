@@ -1,15 +1,20 @@
 const { Router } = require("express")
-const { ObjectId } = require("mongodb")
-const { getDb } = require("../db")
+const { getStorage } = require("../storage/adapter")
 const { bumpVersion } = require("../services/configService")
 
 const router = Router()
 
-// GET /api/mcp — list or render page
+async function getAllMCPs() {
+  const storage = getStorage()
+  const keys = await storage.listKeys("mcp:")
+  const servers = await Promise.all(keys.map(k => storage.get(k)))
+  return servers.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+// GET /api/mcp
 router.get("/", async (req, res) => {
   try {
-    const db = getDb()
-    const servers = await db.collection("mcp").find().sort({ name: 1 }).toArray()
+    const servers = await getAllMCPs()
     if (req.query.format !== "json" && req.accepts("html") && !req.xhr && !req.headers["x-requested-with"]) {
       return res.render("mcp", { servers })
     }
@@ -22,11 +27,12 @@ router.get("/", async (req, res) => {
 // POST /api/mcp
 router.post("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const { name, url } = req.body
-    const doc = { name, url, createdAt: new Date() }
-    await db.collection("mcp").insertOne(doc)
-    await bumpVersion(db)
+    const key = `mcp:${name}`
+    const doc = { _id: key, name, url, createdAt: new Date() }
+    await storage.set(key, doc)
+    await bumpVersion()
     if (req.headers["content-type"]?.includes("urlencoded")) {
       return res.redirect("/api/mcp")
     }
@@ -39,13 +45,18 @@ router.post("/", async (req, res) => {
 // PUT /api/mcp/:id
 router.put("/:id", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
     const { name, url } = req.body
-    await db.collection("mcp").updateOne(
-      { _id: new ObjectId(req.params.id) },
-      { $set: { name, url } }
-    )
-    await bumpVersion(db)
+    
+    const newKey = `mcp:${name}`
+    if (newKey !== id) {
+      await storage.delete(id)
+    }
+
+    const doc = { _id: newKey, name, url }
+    await storage.set(newKey, doc)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -55,9 +66,10 @@ router.put("/:id", async (req, res) => {
 // DELETE /api/mcp/:id
 router.delete("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    await db.collection("mcp").deleteOne({ _id: new ObjectId(req.params.id) })
-    await bumpVersion(db)
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    await storage.delete(id)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })

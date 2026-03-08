@@ -1,38 +1,42 @@
 const { Router } = require("express")
-const { ObjectId } = require("mongodb")
-const { getDb } = require("../db")
+const { getStorage } = require("../storage/adapter")
 const { bumpVersion } = require("../services/configService")
 
 const router = Router()
 
-// ---- API ----
+// Helper to list all commands
+async function getAllCommands() {
+  const storage = getStorage()
+  const keys = await storage.listKeys("command:")
+  const commands = await Promise.all(keys.map(k => storage.get(k)))
+  return commands.sort((a, b) => a._id.localeCompare(b._id))
+}
 
 // GET /api/commands
 router.get("/", async (req, res) => {
   try {
-    const db = getDb()
-    // If request accepts HTML and no JSON query, render page
+    const commands = await getAllCommands()
     if (req.query.format !== "json" && req.accepts("html") && !req.xhr && !req.headers["x-requested-with"]) {
-      const commands = await db.collection("commands").find().sort({ namespace: 1, resource: 1, action: 1 }).toArray()
       return res.render("commands", { commands })
     }
-    const commands = await db.collection("commands").find().sort({ namespace: 1, resource: 1, action: 1 }).toArray()
     res.json(commands)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// GET /api/commands/new — render create form
+// GET /api/commands/new
 router.get("/new", async (req, res) => {
   res.render("command-edit", { command: null })
 })
 
-// GET /api/commands/:id/edit — render edit form
+// GET /api/commands/:id/edit
 router.get("/:id/edit", async (req, res) => {
   try {
-    const db = getDb()
-    const command = await db.collection("commands").findOne({ _id: new ObjectId(req.params.id) })
+    const storage = getStorage()
+    // id could be URL encoded if it's a natural key
+    const id = decodeURIComponent(req.params.id)
+    const command = await storage.get(id)
     if (!command) return res.status(404).send("Not found")
     res.render("command-edit", { command })
   } catch (err) {
@@ -43,9 +47,14 @@ router.get("/:id/edit", async (req, res) => {
 // POST /api/commands
 router.post("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const { namespace, resource, action, description, adapter, adapterConfig, args } = req.body
+    const key = `command:${namespace}.${resource}.${action}`
+    
+    // Check if exists? Overwrite is allowed for now, acts as upsert.
+
     const doc = {
+      _id: key, // Store the key inside the document as well
       namespace,
       resource,
       action,
@@ -56,9 +65,10 @@ router.post("/", async (req, res) => {
       createdAt: new Date(),
       updatedAt: new Date()
     }
-    await db.collection("commands").insertOne(doc)
-    await bumpVersion(db)
-    // If form submission, redirect
+
+    await storage.set(key, doc)
+    await bumpVersion()
+    
     if (req.headers["content-type"]?.includes("urlencoded")) {
       return res.redirect("/api/commands")
     }
@@ -71,9 +81,18 @@ router.post("/", async (req, res) => {
 // PUT /api/commands/:id
 router.put("/:id", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
     const { namespace, resource, action, description, adapter, adapterConfig, args } = req.body
+    
+    // If n/r/a changed, the ID changes, we should delete the old one.
+    const newKey = `command:${namespace}.${resource}.${action}`
+    if (newKey !== id) {
+      await storage.delete(id)
+    }
+
     const update = {
+      _id: newKey,
       namespace,
       resource,
       action,
@@ -83,8 +102,8 @@ router.put("/:id", async (req, res) => {
       args: Array.isArray(args) ? args : JSON.parse(args || "[]"),
       updatedAt: new Date()
     }
-    await db.collection("commands").updateOne({ _id: new ObjectId(req.params.id) }, { $set: update })
-    await bumpVersion(db)
+    await storage.set(newKey, update)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -94,9 +113,10 @@ router.put("/:id", async (req, res) => {
 // DELETE /api/commands/:id
 router.delete("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    await db.collection("commands").deleteOne({ _id: new ObjectId(req.params.id) })
-    await bumpVersion(db)
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    await storage.delete(id)
+    await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })

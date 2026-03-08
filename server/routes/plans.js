@@ -1,5 +1,5 @@
 const { Router } = require("express")
-const { getDb } = require("../db")
+const { getStorage } = require("../storage/adapter")
 const { createPlan } = require("../../cli/planner")
 
 const router = Router()
@@ -7,21 +7,21 @@ const router = Router()
 // POST /api/plans — create a plan
 router.post("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const { command, args, cmd } = req.body
 
-    if (!cmd) {
+    let planCmd = cmd
+    if (!planCmd) {
       // Resolve command from DB
       const [namespace, resource, action] = command.split(".")
-      const dbCmd = await db.collection("commands").findOne({ namespace, resource, action })
-      if (!dbCmd) return res.status(404).json({ error: "Command not found" })
-      const plan = createPlan(dbCmd, args || {})
-      await db.collection("plans").insertOne(plan)
-      return res.status(201).json(plan)
+      planCmd = await storage.get(`command:${namespace}.${resource}.${action}`)
+      if (!planCmd) return res.status(404).json({ error: "Command not found" })
     }
 
-    const plan = createPlan(cmd, args || {})
-    await db.collection("plans").insertOne(plan)
+    const plan = createPlan(planCmd, args || {})
+    
+    // Auto-expiry for file storage logic could go here, but for now we just store it
+    await storage.set(`plan:${plan.plan_id}`, plan)
     res.status(201).json(plan)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -31,13 +31,17 @@ router.post("/", async (req, res) => {
 // GET /api/plans — list recent plans
 router.get("/", async (req, res) => {
   try {
-    const db = getDb()
-    const plans = await db.collection("plans")
-      .find()
-      .sort({ created_at: -1 })
-      .limit(50)
-      .toArray()
-    res.json(plans)
+    const storage = getStorage()
+    const keys = await storage.listKeys("plan:")
+    const plans = await Promise.all(keys.map(k => storage.get(k)))
+    
+    // Sort descending by created_at and limit to 50
+    const sorted = plans
+      .filter(p => !!p)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 50)
+      
+    res.json(sorted)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -46,8 +50,9 @@ router.get("/", async (req, res) => {
 // GET /api/plans/:id — inspect plan
 router.get("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    const plan = await db.collection("plans").findOne({ plan_id: req.params.id })
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    const plan = await storage.get(`plan:${id}`)
     if (!plan) return res.status(404).json({ error: "Plan not found" })
     res.json(plan)
   } catch (err) {
@@ -58,8 +63,9 @@ router.get("/:id", async (req, res) => {
 // POST /api/plans/:id/execute — execute a stored plan
 router.post("/:id/execute", async (req, res) => {
   try {
-    const db = getDb()
-    const plan = await db.collection("plans").findOne({ plan_id: req.params.id })
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    const plan = await storage.get(`plan:${id}`)
     if (!plan) return res.status(404).json({ error: "Plan not found" })
     if (plan.status !== "planned") {
       return res.status(400).json({ error: `Plan status is '${plan.status}', expected 'planned'` })
@@ -67,7 +73,7 @@ router.post("/:id/execute", async (req, res) => {
 
     // Resolve command
     const [namespace, resource, action] = plan.command.split(".")
-    const cmd = await db.collection("commands").findOne({ namespace, resource, action })
+    const cmd = await storage.get(`command:${namespace}.${resource}.${action}`)
     if (!cmd) return res.status(404).json({ error: "Command no longer exists" })
 
     // Execute via adapter
@@ -83,13 +89,15 @@ router.post("/:id/execute", async (req, res) => {
     const duration = Date.now() - start
 
     // Update plan status
-    await db.collection("plans").updateOne(
-      { plan_id: req.params.id },
-      { $set: { status, executed_at: new Date().toISOString(), duration_ms: duration } }
-    )
+    plan.status = status
+    plan.executed_at = new Date().toISOString()
+    plan.duration_ms = duration
+    await storage.set(`plan:${id}`, plan)
 
     // Record job
-    await db.collection("jobs").insertOne({
+    const jobId = `job:${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+    await storage.set(jobId, {
+      _id: jobId,
       command: plan.command,
       plan_id: plan.plan_id,
       args: plan.args,
@@ -114,8 +122,9 @@ router.post("/:id/execute", async (req, res) => {
 // DELETE /api/plans/:id — cancel plan
 router.delete("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    await db.collection("plans").deleteOne({ plan_id: req.params.id })
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    await storage.delete(`plan:${id}`)
     res.json({ ok: true })
   } catch (err) {
     res.status(500).json({ error: err.message })

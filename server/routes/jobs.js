@@ -1,14 +1,19 @@
 const { Router } = require("express")
-const { getDb } = require("../db")
+const { getStorage } = require("../storage/adapter")
 
 const router = Router()
 
 // POST /api/jobs — record a command execution job
 router.post("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const { command, args, status, duration_ms, timestamp, plan_id, error } = req.body
+    
+    // Generate a unique sequential-ish ID
+    const jobId = `job:${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+    
     const doc = {
+      _id: jobId,
       command,
       args: args || {},
       status: status || "unknown",
@@ -17,7 +22,8 @@ router.post("/", async (req, res) => {
       error: error || null,
       timestamp: timestamp || new Date().toISOString()
     }
-    await db.collection("jobs").insertOne(doc)
+    
+    await storage.set(jobId, doc)
     res.status(201).json(doc)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -27,15 +33,21 @@ router.post("/", async (req, res) => {
 // GET /api/jobs — list recent jobs
 router.get("/", async (req, res) => {
   try {
-    const db = getDb()
+    const storage = getStorage()
     const limit = parseInt(req.query.limit) || 50
-    const command = req.query.command
-    const query = command ? { command } : {}
-    const jobs = await db.collection("jobs")
-      .find(query)
-      .sort({ timestamp: -1 })
-      .limit(limit)
-      .toArray()
+    const commandQuery = req.query.command
+    
+    const keys = await storage.listKeys("job:")
+    let jobs = await Promise.all(keys.map(k => storage.get(k)))
+    
+    jobs = jobs.filter(j => !!j)
+    if (commandQuery) {
+      jobs = jobs.filter(j => j.command === commandQuery)
+    }
+    
+    // Sort descending by timestamp
+    jobs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    jobs = jobs.slice(0, limit)
 
     // If HTML request, render
     if (req.query.format !== "json" && req.accepts("html") && !req.xhr && !req.headers["x-requested-with"]) {
@@ -51,23 +63,43 @@ router.get("/", async (req, res) => {
 // GET /api/jobs/stats — aggregate stats
 router.get("/stats", async (req, res) => {
   try {
-    const db = getDb()
-    const total = await db.collection("jobs").countDocuments()
-    const success = await db.collection("jobs").countDocuments({ status: "success" })
-    const failed = await db.collection("jobs").countDocuments({ status: "failed" })
-
-    const topCommands = await db.collection("jobs").aggregate([
-      { $group: { _id: "$command", count: { $sum: 1 }, avg_ms: { $avg: "$duration_ms" } } },
-      { $sort: { count: -1 } },
-      { $limit: 10 }
-    ]).toArray()
+    const storage = getStorage()
+    const keys = await storage.listKeys("job:")
+    const jobs = await Promise.all(keys.map(k => storage.get(k)))
+    
+    const total = jobs.length
+    let success = 0
+    let failed = 0
+    const commandStats = {}
+    
+    for (const job of jobs) {
+      if (!job) continue
+      if (job.status === "success") success++
+      if (job.status === "failed") failed++
+      
+      const cmd = job.command
+      if (!commandStats[cmd]) {
+        commandStats[cmd] = { count: 0, sum_ms: 0 }
+      }
+      commandStats[cmd].count++
+      commandStats[cmd].sum_ms += job.duration_ms
+    }
+    
+    const topCommands = Object.entries(commandStats)
+      .map(([cmd, stats]) => ({
+        command: cmd,
+        count: stats.count,
+        avg_ms: Math.round(stats.sum_ms / stats.count) || 0
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
 
     res.json({
       total,
       success,
       failed,
       failure_rate: total > 0 ? (failed / total * 100).toFixed(1) + "%" : "0%",
-      top_commands: topCommands.map(t => ({ command: t._id, count: t.count, avg_ms: Math.round(t.avg_ms) }))
+      top_commands: topCommands
     })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -77,9 +109,9 @@ router.get("/stats", async (req, res) => {
 // GET /api/jobs/:id — get job details
 router.get("/:id", async (req, res) => {
   try {
-    const db = getDb()
-    const { ObjectId } = require("mongodb")
-    const job = await db.collection("jobs").findOne({ _id: new ObjectId(req.params.id) })
+    const storage = getStorage()
+    const id = decodeURIComponent(req.params.id)
+    const job = await storage.get(id.startsWith("job:") ? id : `job:${id}`)
     if (!job) return res.status(404).json({ error: "Job not found" })
     res.json(job)
   } catch (err) {
