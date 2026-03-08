@@ -1,0 +1,194 @@
+{
+  "name": "beads",
+  "version": "0.1.0",
+  "description": "Wrap beads_rust (br) issue tracking commands",
+  "source": "https://github.com/Dicklesworthstone/beads_rust",
+  "commands": [
+    {
+      "namespace": "beads",
+      "resource": "install",
+      "action": "steps",
+      "description": "Show beads_rust installation steps for LLM automation",
+      "adapter": "builtin",
+      "adapterConfig": { "builtin": "beads_install_steps" },
+      "args": []
+    },
+    {
+      "namespace": "beads",
+      "resource": "workspace",
+      "action": "init",
+      "description": "Initialize beads workspace in current repository",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["init"], "parseJson": false },
+      "args": []
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "create",
+      "description": "Create a beads issue",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "br",
+        "baseArgs": ["create"],
+        "positionalArgs": ["title"],
+        "jsonFlag": "--json",
+        "parseJson": true
+      },
+      "args": [
+        { "name": "title", "type": "string", "required": true },
+        { "name": "type", "type": "string", "required": false },
+        { "name": "priority", "type": "integer", "required": false },
+        { "name": "description", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "list",
+      "description": "List beads issues",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["list"], "jsonFlag": "--json", "parseJson": true },
+      "args": [
+        { "name": "status", "type": "string", "required": false },
+        { "name": "priority", "type": "string", "required": false },
+        { "name": "assignee", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "ready",
+      "description": "List actionable beads issues",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["ready"], "jsonFlag": "--json", "parseJson": true },
+      "args": []
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "show",
+      "description": "Show beads issue details",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "br",
+        "baseArgs": ["show"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "update",
+      "description": "Update a beads issue",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "br",
+        "baseArgs": ["update"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true },
+        { "name": "status", "type": "string", "required": false },
+        { "name": "priority", "type": "integer", "required": false },
+        { "name": "assignee", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "close",
+      "description": "Close a beads issue",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "br",
+        "baseArgs": ["close"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true },
+        { "name": "reason", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "issue",
+      "action": "reopen",
+      "description": "Reopen a beads issue",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "br",
+        "baseArgs": ["reopen"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "dep",
+      "action": "add",
+      "description": "Add dependency child->parent",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["dep", "add"], "positionalArgs": ["child", "parent"], "parseJson": false },
+      "args": [
+        { "name": "child", "type": "string", "required": true },
+        { "name": "parent", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "dep",
+      "action": "remove",
+      "description": "Remove dependency child->parent",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["dep", "remove"], "positionalArgs": ["child", "parent"], "parseJson": false },
+      "args": [
+        { "name": "child", "type": "string", "required": true },
+        { "name": "parent", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "dep",
+      "action": "cycles",
+      "description": "Find dependency cycles",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["dep", "cycles"], "jsonFlag": "--json", "parseJson": true },
+      "args": []
+    },
+    {
+      "namespace": "beads",
+      "resource": "sync",
+      "action": "run",
+      "description": "Run beads sync",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["sync"], "parseJson": false },
+      "args": [
+        { "name": "flush-only", "type": "boolean", "required": false },
+        { "name": "import-only", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "beads",
+      "resource": "stats",
+      "action": "show",
+      "description": "Show beads project stats",
+      "adapter": "process",
+      "adapterConfig": { "command": "br", "baseArgs": ["stats"], "jsonFlag": "--json", "parseJson": true },
+      "args": []
+    }
+  ]
+}
