@@ -1,6 +1,6 @@
-# SuperACLI - SuperCLI - DCLI - Super Agentic CLI
+# dcli: Universal Cross-Harness CLI Router
 
-Config-driven, AI-friendly CLI that dynamically generates commands from cloud configuration.
+Route commands across dozens of popular CLIs (GitHub, AWS, Docker, Kubernetes, Google Workspace, and more) through a unified skills discovery and execution layer.
 
 ## BIN Aliases
 
@@ -9,27 +9,56 @@ Config-driven, AI-friendly CLI that dynamically generates commands from cloud co
 - scli (Brand smaller)
 - superacli (What was available) (Super Agent/ic CLI)
 
+## What is a Cross-Harness Router?
+
+A **harness** is a bridge to an external CLI tool. dcli acts as a unified **router** for commands and skills across:
+
+- **Bundled Harnesses**: beads (task/issue management), gwc (Google Workspace), commiat (commit automation)
+- **Built-in Adapters**: OpenAPI specs, raw HTTP, MCP (Model Context Protocol) servers
+- **Plugin Harnesses**: Community-contributed and custom CLIs installed as plugins
+- **Future Harnesses**: Popular CLIs like gh (GitHub), aws (AWS), docker, kubectl, etc.
+
+Through a single interface, you can:
+1. **Discover** skills across all connected harnesses
+2. **Route** commands to the appropriate harness
+3. **Execute** with unified output formatting
+4. **Extend** by adding new harnesses as plugins
+
+Example: Execute commands across different harnesses with consistent routing:
+```bash
+supercli beads issue list              # Route to beads harness
+supercli gwc drive files list          # Route to Google Workspace harness
+supercli docker container ps           # Route to Docker harness (when plugin installed)
+```
+
 ## Architecture
 
 ```
-         Web UI (EJS + Vue3 + DaisyUI)
+        Web UI (EJS + Vue3 + DaisyUI)
                     │
                 REST API
                     │
-           NodeJS + MongoDB
+        Cross-Harness Skills Router
                     │
-              CLI Runtime
-                    │
-          ┌────────┼────────┐
-       OpenAPI    HTTP     MCP
-       Adapter   Adapter  Adapter
+    ┌───────────────┼─────────────┬──────────────┐
+    │               │             │              │
+ Bundled         Built-in      Plugin       Community
+Harnesses       Adapters      Harnesses     Harnesses
+(beads, gwc,   (OpenAPI,    (beads, gwc,   (gh, aws,
+ commiat)      HTTP, MCP)    commiat)      docker, etc)
 ```
+
+The router intelligently:
+- **Discovers** available skills from all harnesses
+- **Routes** commands to appropriate harnesses based on namespace
+- **Executes** with unified error handling and output formatting
+- **Caches** skills for fast discovery and AI resolution
 
 ## Quick Start
 
 ```bash
 # Quick usage (no install, local-only by default)
-npx supercli help
+npx supercli help                      # List available harnesses
 npx supercli skills teach
 
 # Install
@@ -46,72 +75,88 @@ npm start
 # Open Web UI
 open http://localhost:3000
 
-# CLI usage
-node cli/supercli.js help
-node cli/supercli.js commands
-node cli/supercli.js <namespace> <resource> <action> [--args]
+# CLI usage - Multi-harness routing
+supercli help                          # List all harnesses
+supercli beads                         # List beads skills
+supercli gwc                           # List Google Workspace skills
+supercli beads issue list              # Execute beads command
+supercli gwc drive files list          # Execute Google Workspace command
 
-# Optional: sync commands from a remote SuperCLI server
-export SUPERCLI_SERVER=http://localhost:3000
-node cli/supercli.js sync
+# Skills discovery across harnesses
+supercli skills list                   # All skills from all harnesses
+supercli skills search "database"      # Full-text search across harnesses
+
+# AI-driven multi-harness execution
+supercli ask "show my tasks and recent commits"
+
+# Manage plugin harnesses
+supercli plugins list
+supercli plugins explore               # Browse available plugins
+supercli plugins install commiat       # Install community plugin
 ```
 
 ## CLI Usage
 
+### Multi-Harness Routing
+
 ```bash
+# Basic harness routing
+supercli <harness>                          # List skills in harness
+supercli <harness> <skill-group> <action>   # Execute skill
+
+# Examples across different harnesses
+supercli beads issue create --title "Fix bug"
+supercli beads issue list --status open
+supercli gwc drive files list --limit 10
+supercli commiat validate --commit-msg "my message"
+
 # Discovery
-supercli help                              # List namespaces
-supercli <namespace>                       # List resources
-supercli <namespace> <resource>            # List actions
+supercli help                              # List all harnesses
+supercli skills list                       # List all skills from all harnesses
+supercli skills search --harness beads     # Search within harness
+supercli skills search "database"          # Full-text search across harnesses
 
 # Inspection
-supercli inspect <ns> <res> <act>          # Command details + schema
-supercli <ns> <res> <act> --schema         # Input/output schema
+supercli inspect beads issue create        # Command details + schema
+supercli skills get beads.issue.create     # Get skill metadata
 
 # Execution
-supercli <ns> <res> <act> --arg value      # Execute command
-supercli <ns> <res> <act> --compact        # Token-optimized output
+supercli beads issue create --title "New task"      # Standard execution
+supercli beads issue list --json                    # JSON output
+supercli beads issue list --compact                 # Token-optimized output
 
-# Plans (DAG)
-supercli plan <ns> <res> <act> [--args]    # Dry-run execution plan
-supercli execute <plan_id>                 # Execute stored plan
-
-# Skills (LLM bootstrap)
-supercli skills list --json                # Minimal skill metadata (name, description)
-supercli skills get <ns.res.act>           # Emit SKILL.md (default format)
-supercli skills teach                      # Emit starter meta-skill (default format)
-supercli skills get <ns.res.act> --show-dag
-supercli skills providers list --json      # List local skill providers
-supercli skills sync --json                # Rebuild local skill catalog index
-supercli skills list --catalog --json      # List catalog skills as provider:id
-supercli skills get <provider:id>          # Read SKILL.md from local catalog
-supercli skills search --query "plan" --json
+# Plans (DAG execution)
+supercli plan beads issue create --title "Task"     # Dry-run execution plan
+supercli execute <plan_id>                         # Execute stored plan
 
 # Natural Language (AI)
-export OPENAI_BASE_URL=https://api.openai.com/v1     # Enable local AI resolution
-supercli ask "list the posts and summarize them"         # Execute natural language queries
+export OPENAI_BASE_URL=https://api.openai.com/v1   # Enable AI resolution
+supercli ask "list my tasks and summarize them"     # Execute across harnesses
 
 # Config & Server
-supercli sync                              # Sync local cache from SUPERCLI_SERVER (when set)
+supercli sync                              # Sync local cache from server
 supercli config show                       # Show cache info
-supercli --server                          # Start the SuperCLI backend server directly
+supercli --server                          # Start backend server
 
+# Plugin Harness Management
+supercli plugins list                      # List installed harnesses
+supercli plugins explore                   # Browse plugin registry
+supercli plugins explore --tags git,ai     # Search registry by tags
+supercli plugins install commiat           # Install from registry
+supercli plugins install --git https://github.com/org/repo.git --ref main
+supercli plugins show commiat              # Show harness details
+supercli plugins doctor commiat            # Check harness health
+```
+
+### Built-in Adapters
+
+```bash
 # Local MCP registry (no server required)
 supercli mcp list
 supercli mcp add summarize-local --url http://127.0.0.1:8787
 supercli mcp remove summarize-local
 
-# Plugins
-supercli plugins list
-supercli plugins explore
-supercli plugins explore --name commiat
-supercli plugins explore --tags git,ai
-supercli plugins install commiat
-supercli plugins install --git https://github.com/org/repo.git --manifest-path plugins/supercli/plugin.json --ref main
-supercli plugins show commiat
-supercli plugins doctor commiat
-
-# Stdio MCP demo (no server required)
+# Stdio MCP demo
 node examples/mcp-stdio/install-demo.js
 supercli ai text summarize --text "Hello world" --json
 
@@ -132,6 +177,85 @@ supercli --help-json                       # Machine-readable capabilities
 | `--json`    | Structured JSON envelope                  |
 | `--human`   | Formatted tables and key-value output     |
 | `--compact` | Compressed JSON (shortened keys)          |
+
+## Plugins as Harnesses
+
+A **plugin harness** bridges dcli to an external CLI tool. Each plugin:
+- Defines a manifest (`plugin.json`) with available commands
+- Maps CLI arguments to dcli's command structure
+- Supports either command wrapping (selective commands) or passthrough (full CLI)
+- Includes dependency checks and installation guidance
+
+### Currently Supported Harnesses
+
+**Bundled with dcli:**
+- **beads** (`br`) — Task/issue management via beads_rust
+- **gwc** (`gws`) — Google Workspace CLI with full passthrough
+- **commiat** — Commit automation with full passthrough
+
+**Built-in Adapters:**
+- **OpenAPI** — Generic OpenAPI spec resolution
+- **HTTP** — Raw HTTP requests
+- **MCP** — Model Context Protocol tools (stdio and SSE/HTTP)
+
+**Popular Community Harnesses** (via plugins):
+- GitHub CLI (`gh`)
+- AWS CLI (`aws`)
+- Google Cloud CLI (`gcloud`)
+- Azure CLI (`az`)
+- Docker (`docker`)
+- Kubernetes (`kubectl`)
+- Terraform (`terraform`)
+- npm, pip, cargo (package managers)
+- git, git-cliff (version control)
+- And many more...
+
+See [docs/supported-harnesses.md](docs/supported-harnesses.md) for the complete list.
+
+### Installing Plugin Harnesses
+
+```bash
+# From built-in registry
+supercli plugins install commiat
+
+# From GitHub repository
+supercli plugins install --git https://github.com/org/plugin-harness.git --ref main
+
+# Local directory (development)
+supercli plugins install ./path/to/plugin
+
+# Browse registry
+supercli plugins explore
+supercli plugins explore --tags "github,ai"
+```
+
+### Creating Your Own Harness
+
+Turn any CLI into a dcli harness:
+
+1. Create a `plugin.json` manifest defining commands
+2. Specify wrapping or passthrough behavior
+3. Include dependency checks and help guidance
+4. Test with `supercli plugins install ./path`
+5. Publish to registry with `supercli plugins publish`
+
+See [docs/plugin-harness-guide.md](docs/plugin-harness-guide.md) for detailed instructions and examples.
+
+### Planned Harnesses
+
+The dcli community is actively developing plugins for popular CLIs:
+
+- **GitHub Ecosystem**: gh (GitHub CLI), GitHub Actions workflows
+- **Cloud Platforms**: aws, gcloud, az CLI tools
+- **Container & DevOps**: docker, docker-compose, kubectl, helm, terraform
+- **Version Control**: git, git-cliff, commitizen
+- **Package Managers**: npm, pip, cargo, pnpm, yarn
+- **AI/ML Tools**: huggingface, langchain, LLM CLIs
+- **Infrastructure**: ansible, pulumi
+- **Monitoring**: datadog, prometheus CLIs
+- Many others based on community requests
+
+Want to contribute a plugin harness? [See plugin guide](docs/plugin-harness-guide.md) and submit to the registry!
 
 ## Output Envelope
 
@@ -173,11 +297,16 @@ Every command returns a deterministic envelope:
 | GET    | `/api/jobs`                   | Execution history        |
 | GET    | `/api/jobs/stats`             | Aggregate stats          |
 
-## Adapters
+## Built-in Harnesses & Adapters
+
+The following are built-in to dcli (no plugins required):
 
 - **http** — Raw HTTP requests (method, url, headers)
 - **openapi** — Resolves operation from OpenAPI spec
 - **mcp** — Calls MCP server tools (supports both HTTP endpoints and local Stdio processes)
+- **beads** — Task/issue management (if br is installed)
+- **gwc** — Google Workspace (if gws is installed)
+- **commiat** — Commit automation (if commiat is installed)
 
 ## Tech Stack
 
@@ -185,6 +314,8 @@ Every command returns a deterministic envelope:
 - Pluggable KV Storage (Local JSON files by default, MongoDB optional)
 - EJS + Vue3 CDN + Tailwind CDN + DaisyUI CDN
 - Zero build tools
+- Extensible plugin system for registering new harnesses
+- Support for OpenAPI, HTTP, MCP, and custom CLI adapters
 
 ## Contributors
 
