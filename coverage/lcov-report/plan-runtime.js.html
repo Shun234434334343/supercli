@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">93.75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/16</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">54.54% </span>
+                <span class="strong">44.44% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/11</span>
+                <span class='fraction'>4/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
@@ -96,24 +96,6 @@
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -124,8 +106,26 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { createPlan } = require("./planner")
 &nbsp;
@@ -149,11 +149,11 @@ function outputHumanPlan(plan) {
   console.log(`\n  ⚡ Execution Plan: ${plan.plan_id}\n`)
   console.log(`  Command: ${plan.command}`)
   console.log(`  Risk:    ${plan.risk_level}`)
-  console.log(`  Side effects: ${plan.side_effects ? <span class="branch-0 cbranch-no" title="branch not covered" >"yes" </span>: "no"}`)
-  console.log(`  Persisted: ${plan.persisted ? <span class="branch-0 cbranch-no" title="branch not covered" >"yes" </span>: "no"}`)
+  console.log(`  Side effects: ${plan.side_effects<span class="branch-0 cbranch-no" title="branch not covered" > ? "yes" </span>: "no"}`)
+  console.log(`  Persisted: ${plan.persisted<span class="branch-0 cbranch-no" title="branch not covered" > ? "yes" </span>: "no"}`)
   console.log("\n  Steps:")
-  plan.steps.forEach((s, i) =&gt; console.log(`    ${i + 1}. [${s.type}] ${s.description || <span class="branch-1 cbranch-no" title="branch not covered" >s.method </span>|| <span class="branch-2 cbranch-no" title="branch not covered" >""}</span> ${s.url || ""}`))
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (plan.persisted) <span class="cstat-no" title="statement not covered" >console.log(`\n  Execute: supercli execute ${plan.plan_id}`)</span>
+  plan.steps.forEach((s, i) =&gt; console.log(`    ${i + 1}. [${s.type}] ${s.description<span class="branch-0 cbranch-no" title="branch not covered" > || s.method<span class="branch-0 cbranch-no" title="branch not covered" > </span>|| ""}</span> ${s.url || ""}`))
+  if (plan.persisted) <span class="branch-0 cbranch-no" title="branch not covered" >console.log(`\n  Execute: supercli execute ${plan.plan_id}`)</span>
   else console.log("\n  Execute: local plan preview only (set SUPERCLI_SERVER for persisted execute)")
   console.log("")
 }
@@ -166,7 +166,7 @@ module.exports = { buildLocalPlan, annotateServerPlan, outputHumanPlan }
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-08T18:06:39.683Z
+                at 2026-03-08T18:17:55.095Z
             </div>
         <script src="prettify.js"></script>
         <script>

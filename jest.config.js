@@ -1,13 +1,16 @@
 module.exports = {
+  rootDir: ".",
   testEnvironment: "node",
   testTimeout: 15000,
   collectCoverage: true,
+  coverageProvider: "v8",
   collectCoverageFrom: [
-    "cli/planner.js",
-    "cli/plan-runtime.js",
-    "cli/help-json.js",
-    "cli/skills.js"
+    "cli/**/*.js",
+    "!cli/supercli.js",
+    "!cli/adapters/**"
   ],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov", "clover"],
   coverageThreshold: {
     global: {
       branches: 10,
