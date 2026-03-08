@@ -197,13 +197,13 @@ function renderTopLevelHelp(config) {
     console.log("\n  Usage: supercli <namespace> <resource> <action> [--args]");
     if (hasServer) console.log("  Sync: supercli sync");
     console.log(
-      "  Plugins: supercli plugins list | supercli plugins install beads|gwc | supercli plugins show beads|gwc",
+      "  Plugins: supercli plugins explore | supercli plugins install <name|path> | supercli plugins install --git <repo>",
     );
     console.log(
       "  MCP: supercli mcp list | supercli mcp add <name> --url <url> | supercli mcp remove <name>",
     );
     console.log(
-      "  Skills: supercli skills list | supercli skills get <ns.res.act> | supercli skills teach",
+      "  Skills: supercli skills list | supercli skills get <id> | supercli skills search --query <q> | supercli skills sync",
     );
     if (config.features?.ask || process.env.OPENAI_BASE_URL) {
       console.log('  AI: supercli ask "<your natural language query>"');
@@ -570,7 +570,10 @@ async function main() {
         const start = Date.now();
         const result = await execute(
           passthrough.command,
-          { __rawArgs: passthrough.passthroughArgs },
+          {
+            __rawArgs: passthrough.passthroughArgs,
+            __passthroughInteractive: humanMode && isTTY,
+          },
           { server: SERVER || "", config },
         );
         const duration = Date.now() - start;
@@ -581,6 +584,9 @@ async function main() {
           data: result,
         };
 
+        if (humanMode && result && typeof result === "object" && result.passthrough === true) {
+          return;
+        }
         if (humanMode && result && typeof result === "object" && typeof result.raw === "string") {
           console.log(result.raw);
         } else {
