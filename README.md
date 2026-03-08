@@ -99,8 +99,16 @@ supercli mcp remove summarize-local
 # Plugins
 supercli plugins list
 supercli plugins install beads
+supercli plugins install gwc
 supercli plugins show beads
+supercli plugins show gwc
 supercli beads install steps --json
+supercli gwc install steps --json
+
+# Google Workspace CLI passthrough (after plugin install)
+supercli gwc --help
+supercli gwc schema drive.files.list
+supercli gwc drive files list --params '{"pageSize": 5}'
 
 # Stdio MCP demo (no server required)
 node examples/mcp-stdio/install-demo.js

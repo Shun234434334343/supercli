@@ -20,6 +20,7 @@ const {
 } = require("./plan-runtime");
 const { handleAskCommand } = require("./ask");
 const { handleSkillsCommand } = require("./skills");
+const { findNamespacePassthrough } = require("./namespace-passthrough");
 
 const SERVER = process.env.SUPERCLI_SERVER;
 const hasServer = !!SERVER;
@@ -196,7 +197,7 @@ function renderTopLevelHelp(config) {
     console.log("\n  Usage: supercli <namespace> <resource> <action> [--args]");
     if (hasServer) console.log("  Sync: supercli sync");
     console.log(
-      "  Plugins: supercli plugins list | supercli plugins install beads | supercli plugins show beads",
+      "  Plugins: supercli plugins list | supercli plugins install beads|gwc | supercli plugins show beads|gwc",
     );
     console.log(
       "  MCP: supercli mcp list | supercli mcp add <name> --url <url> | supercli mcp remove <name>",
@@ -560,6 +561,33 @@ async function main() {
         });
       }
       return;
+    }
+
+    {
+      const config = await loadConfig(SERVER);
+      const passthrough = findNamespacePassthrough(config, positional, rawArgs);
+      if (passthrough) {
+        const start = Date.now();
+        const result = await execute(
+          passthrough.command,
+          { __rawArgs: passthrough.passthroughArgs },
+          { server: SERVER || "", config },
+        );
+        const duration = Date.now() - start;
+        const envelope = {
+          version: "1.0",
+          command: `${passthrough.namespace}.passthrough`,
+          duration_ms: duration,
+          data: result,
+        };
+
+        if (humanMode && result && typeof result === "object" && typeof result.raw === "string") {
+          console.log(result.raw);
+        } else {
+          output(envelope);
+        }
+        return;
+      }
     }
 
     if (positional.length === 1) {
