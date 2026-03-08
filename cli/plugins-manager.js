@@ -1,7 +1,9 @@
 const fs = require("fs")
 const path = require("path")
+const os = require("os")
 const { spawnSync } = require("child_process")
 const { SUPPORTED_ADAPTERS } = require("./adapter-schema")
+const { getRegistryPlugin } = require("./plugins-registry")
 const {
   readPluginsLock,
   writePluginsLock,
@@ -33,6 +35,16 @@ const PLUGIN_INSTALL_GUIDANCE = {
       "gws --version"
     ],
     note: "Installation is intentionally delegated to your LLM/automation flow (dcli/scli/supercli)."
+  },
+  commiat: {
+    plugin: "commiat",
+    binary: "commiat",
+    check: "commiat --version",
+    install_steps: [
+      "npm install -g commiat",
+      "commiat --version"
+    ],
+    note: "Installation is intentionally delegated to your LLM/automation flow (dcli/scli/supercli)."
   }
 }
 
@@ -48,16 +60,7 @@ function resolveManifestPath(ref) {
   return base
 }
 
-function loadPluginManifest(ref) {
-  const manifestPath = resolveManifestPath(ref)
-  if (!manifestPath || !fs.existsSync(manifestPath)) {
-    throw Object.assign(new Error(`Plugin '${ref}' not found`), {
-      code: 92,
-      type: "resource_not_found",
-      recoverable: false,
-      suggestions: ["Run: dcli plugins list"]
-    })
-  }
+function parseManifestFile(manifestPath) {
   let raw
   try {
     raw = JSON.parse(fs.readFileSync(manifestPath, "utf-8"))
@@ -76,6 +79,160 @@ function loadPluginManifest(ref) {
     })
   }
   return raw
+}
+
+function resolveRepoManifestPath(baseDir, manifestPath) {
+  const relative = manifestPath || "plugin.json"
+  const candidate = path.resolve(baseDir, relative)
+  const normalizedBase = path.resolve(baseDir) + path.sep
+  if (!candidate.startsWith(normalizedBase)) {
+    throw Object.assign(new Error(`Invalid manifest path '${relative}'`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+  return candidate
+}
+
+function loadManifestFromGit(repo, options = {}) {
+  if (!repo || typeof repo !== "string") {
+    throw Object.assign(new Error("Missing git repo URL/path for plugin install"), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-plugin-"))
+  try {
+    const args = ["clone", "--depth", "1"]
+    if (options.ref) {
+      args.push("--branch", String(options.ref), "--single-branch")
+    }
+    args.push(repo, tmpDir)
+    const clone = spawnSync("git", args, { encoding: "utf-8", timeout: 15000 })
+
+    if (clone.error) {
+      const suggestion = clone.error.code === "ENOENT"
+        ? ["Install git and retry"]
+        : []
+      throw Object.assign(new Error(`Failed to clone plugin repo '${repo}': ${clone.error.message}`), {
+        code: 105,
+        type: "integration_error",
+        recoverable: true,
+        suggestions: suggestion
+      })
+    }
+    if (clone.status !== 0) {
+      throw Object.assign(new Error(`Failed to clone plugin repo '${repo}': ${(clone.stderr || "").trim() || `exit ${clone.status}`}`), {
+        code: 105,
+        type: "integration_error",
+        recoverable: true
+      })
+    }
+
+    const manifestPath = resolveRepoManifestPath(tmpDir, options.manifestPath)
+    if (!fs.existsSync(manifestPath)) {
+      throw Object.assign(new Error(`Plugin manifest not found in repo: ${options.manifestPath || "plugin.json"}`), {
+        code: 92,
+        type: "resource_not_found",
+        recoverable: false
+      })
+    }
+
+    return {
+      manifest: parseManifestFile(manifestPath),
+      resolvedFrom: {
+        type: "git",
+        repo,
+        ref: options.ref || null,
+        manifest_path: options.manifestPath || "plugin.json"
+      }
+    }
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  }
+}
+
+function resolveRegistrySource(name) {
+  const entry = getRegistryPlugin(name)
+  if (!entry) return null
+
+  const source = entry.source || {}
+  const sourceType = source.type || "bundled"
+
+  if (sourceType === "git") {
+    return {
+      type: "git",
+      entry,
+      repo: source.repo,
+      ref: source.ref,
+      manifestPath: source.manifest_path
+    }
+  }
+
+  const manifestPath = source.manifest_path || `plugins/${entry.name}/plugin.json`
+  const absolute = path.resolve(__dirname, "..", manifestPath)
+  return {
+    type: "path",
+    entry,
+    manifestPath: absolute
+  }
+}
+
+function loadPluginManifest(ref, options = {}) {
+  if (options.git) {
+    return loadManifestFromGit(options.git, {
+      ref: options.ref,
+      manifestPath: options.manifestPath
+    })
+  }
+
+  const directManifestPath = resolveManifestPath(ref)
+  if (directManifestPath && fs.existsSync(directManifestPath)) {
+    return {
+      manifest: parseManifestFile(directManifestPath),
+      resolvedFrom: {
+        type: "path",
+        manifest_path: directManifestPath
+      }
+    }
+  }
+
+  const registrySource = resolveRegistrySource(ref)
+  if (!registrySource) {
+    throw Object.assign(new Error(`Plugin '${ref}' not found`), {
+      code: 92,
+      type: "resource_not_found",
+      recoverable: false,
+      suggestions: ["Run: dcli plugins explore"]
+    })
+  }
+
+  if (registrySource.type === "git") {
+    return loadManifestFromGit(registrySource.repo, {
+      ref: registrySource.ref,
+      manifestPath: registrySource.manifestPath
+    })
+  }
+
+  if (!registrySource.manifestPath || !fs.existsSync(registrySource.manifestPath)) {
+    throw Object.assign(new Error(`Plugin manifest not found for '${ref}'`), {
+      code: 92,
+      type: "resource_not_found",
+      recoverable: false
+    })
+  }
+
+  return {
+    manifest: parseManifestFile(registrySource.manifestPath),
+    resolvedFrom: {
+      type: "registry",
+      name: ref,
+      manifest_path: registrySource.manifestPath
+    }
+  }
 }
 
 function checkBinary(binary) {
@@ -186,7 +343,8 @@ function installPlugin(ref, options = {}) {
     })
   }
 
-  const manifest = loadPluginManifest(ref)
+  const loaded = loadPluginManifest(ref, options)
+  const manifest = loaded.manifest
   const lock = readPluginsLock()
   const existing = lock.installed[manifest.name]
   const currentCommands = Array.isArray(options.currentCommands) ? options.currentCommands : []
@@ -251,6 +409,7 @@ function installPlugin(ref, options = {}) {
     version: manifest.version || "0.0.0",
     description: manifest.description || "",
     source: manifest.source || ref,
+    resolved_from: loaded.resolvedFrom,
     installed_at: new Date().toISOString(),
     commands: installedCommands,
     checks: manifest.checks || []
