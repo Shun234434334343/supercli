@@ -28,4 +28,30 @@ describe("adapter-schema", () => {
       adapterConfig: { script: "echo '{\"ok\":true}'", unsafe: true, timeout_ms: 1000 }
     })).not.toThrow()
   })
+
+  test("accepts process safety metadata", () => {
+    expect(() => validateAdapterConfig({
+      adapter: "process",
+      adapterConfig: {
+        command: "docker",
+        safetyLevel: "guarded",
+        interactiveFlags: ["-i", "--interactive"],
+        requiresInteractive: false
+      }
+    })).not.toThrow()
+  })
+
+  test("rejects non-array interactiveFlags", () => {
+    expect(() => validateAdapterConfig({
+      adapter: "process",
+      adapterConfig: { command: "docker", interactiveFlags: "--tty" }
+    })).toThrow(/interactiveFlags must be an array/)
+  })
+
+  test("rejects non-string interactiveFlags values", () => {
+    expect(() => validateAdapterConfig({
+      adapter: "process",
+      adapterConfig: { command: "docker", interactiveFlags: ["--tty", 42] }
+    })).toThrow(/interactiveFlags values must be strings/)
+  })
 })
