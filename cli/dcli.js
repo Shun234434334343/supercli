@@ -4,6 +4,7 @@ const { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listM
 const { execute } = require("./executor")
 const { buildCapabilities } = require("./help-json")
 const { handleMcpRegistryCommand } = require("./mcp-local")
+const { buildLocalPlan, annotateServerPlan, outputHumanPlan } = require("./plan-runtime")
 const {
   handleSkillsCommand
 } = require("./skills")
@@ -94,12 +95,12 @@ function outputError(error) {
   process.exit(envelope.error.code)
 }
 
-function requireServer() {
+function requireServer(message) {
   if (hasServer) return true
   outputError({
     code: 85,
     type: "invalid_argument",
-    message: "This command requires DCLI_SERVER. Export DCLI_SERVER and run: dcli sync",
+    message: message || "This command requires DCLI_SERVER. Export DCLI_SERVER and run: dcli sync",
     recoverable: false
   })
   return false
@@ -301,7 +302,6 @@ async function main() {
     }
 
     if (positional[0] === "plan") {
-      if (!requireServer()) return
       if (positional.length < 4) {
         outputError({ code: 85, type: "invalid_argument", message: "Usage: dcli plan <namespace> <resource> <action> [--args]", recoverable: false })
         return
@@ -314,25 +314,22 @@ async function main() {
         outputError({ code: 92, type: "resource_not_found", message: `Command ${positional[1]}.${positional[2]}.${positional[3]} not found`, suggestions: ["Run: dcli commands"] })
         return
       }
-      // Create plan via server
+      const args = userFlags()
+      if (!hasServer) {
+        const localPlan = buildLocalPlan(cmd, args)
+        if (humanMode) outputHumanPlan(localPlan)
+        else output(localPlan)
+        return
+      }
       try {
         const r = await fetch(`${SERVER}/api/plans`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: `${cmd.namespace}.${cmd.resource}.${cmd.action}`, args: userFlags(), cmd })
+          body: JSON.stringify({ command: `${cmd.namespace}.${cmd.resource}.${cmd.action}`, args, cmd })
         })
-        const plan = await r.json()
-        if (humanMode) {
-          console.log(`\n  ⚡ Execution Plan: ${plan.plan_id}\n`)
-          console.log(`  Command: ${plan.command}`)
-          console.log(`  Risk:    ${plan.risk_level}`)
-          console.log(`  Side effects: ${plan.side_effects ? "yes" : "no"}\n`)
-          console.log("  Steps:")
-          plan.steps.forEach((s, i) => console.log(`    ${i + 1}. [${s.type}] ${s.description || s.method || ""} ${s.url || ""}`))
-          console.log(`\n  Execute: dcli execute ${plan.plan_id}\n`)
-        } else {
-          output(plan)
-        }
+        const plan = annotateServerPlan(await r.json())
+        if (humanMode) outputHumanPlan(plan)
+        else output(plan)
       } catch (err) {
         outputError({ code: 105, type: "integration_error", message: `Failed to create plan: ${err.message}`, recoverable: true })
       }
@@ -340,7 +337,7 @@ async function main() {
     }
 
     if (positional[0] === "execute" && positional.length === 2) {
-      if (!requireServer()) return
+      if (!requireServer("This command requires DCLI_SERVER and a persisted plan. Local plans from `dcli plan` are preview-only.")) return
       const planId = positional[1]
       try {
         const r = await fetch(`${SERVER}/api/plans/${planId}/execute`, { method: "POST" })

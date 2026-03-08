@@ -10,6 +10,14 @@ const path = require("path")
 
 const SERVER = process.env.DCLI_SERVER || "http://127.0.0.1:3000"
 const CLI = path.join(__dirname, "..", "cli", "dcli.js")
+const SERVER_AVAILABLE = (() => {
+  try {
+    execSync(`curl -s --max-time 2 ${SERVER}/api/config > /dev/null`, { stdio: "ignore" })
+    return true
+  } catch {
+    return false
+  }
+})()
 const run = (args, opts = {}) => {
   try {
     const result = execSync(`DCLI_SERVER=${SERVER} node ${CLI} ${args}`, {
@@ -118,6 +126,16 @@ test("sync is unavailable when DCLI_SERVER is not set", () => {
   assert(r.code === 92, "sync should be treated as unknown command")
 })
 
+test("plan works in local mode without DCLI_SERVER", () => {
+  run("sync --json")
+  const r = runNoServer("plan test items list --json")
+  assert(r.ok, "local plan should succeed")
+  const d = JSON.parse(r.output)
+  assert(d.execution_mode === "local", "execution_mode should be local")
+  assert(d.persisted === false, "persisted should be false")
+  assert(Array.isArray(d.steps) && d.steps.length > 0, "should include plan steps")
+})
+
 test("local mcp registry can add/list/remove without DCLI_SERVER", () => {
   const add = runNoServer("mcp add local-demo --url http://127.0.0.1:7777 --json")
   assert(add.ok, "mcp add should succeed")
@@ -144,6 +162,7 @@ test("config show returns cache info", () => {
 })
 
 test("sync command refreshes local config", () => {
+  if (!SERVER_AVAILABLE) return
   const r = run("sync --json")
   assert(r.ok, "sync should succeed")
   const d = parse(r)
@@ -277,6 +296,7 @@ test("unknown command returns resource_not_found", () => {
 
 // ── plan command ──
 test("plan creates execution plan", () => {
+  if (!SERVER_AVAILABLE) return
   const r = run("plan test items list --json")
   assert(r.ok, "plan should succeed")
   const d = parse(r)
