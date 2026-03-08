@@ -123,6 +123,68 @@ describe("executor", () => {
     )
   })
 
+  test("handles workflow template replacement with invalid path", async () => {
+    const workflow = {
+      type: "workflow",
+      steps: [
+        { command: "ns.res.act1", args: { name: "initial" } },
+        { command: "ns.res.act2", args: { info: "Val is {{step.0.result.nonexistent}}" } }
+      ]
+    }
+    
+    const context = {
+      config: {
+        commands: [
+          { namespace: "ns", resource: "res", action: "act1", adapter: "builtin" },
+          { namespace: "ns", resource: "res", action: "act2", adapter: "builtin" }
+        ]
+      }
+    }
+
+    mockAdapters.builtin.execute
+      .mockResolvedValueOnce({ data: "result" })
+      .mockResolvedValueOnce({ ok: true })
+
+    await execute(workflow, {}, context)
+
+    expect(mockAdapters.builtin.execute).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        info: "Val is "
+      }),
+      expect.anything()
+    )
+  })
+
+  test("handles workflow template replacement with missing step", async () => {
+    const workflow = {
+      type: "workflow",
+      steps: [
+        { command: "ns.res.act", args: { info: "Val is {{step.5.result.data}}" } }
+      ]
+    }
+    
+    const context = {
+      config: {
+        commands: [
+          { namespace: "ns", resource: "res", action: "act", adapter: "builtin" }
+        ]
+      }
+    }
+
+    mockAdapters.builtin.execute.mockResolvedValue({ ok: true })
+
+    await execute(workflow, {}, context)
+
+    expect(mockAdapters.builtin.execute).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        info: "Val is "
+      }),
+      expect.anything()
+    )
+  })
+
   test("fetches missing command from server during workflow", async () => {
     const workflow = {
       type: "workflow",
