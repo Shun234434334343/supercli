@@ -73,6 +73,11 @@ const exploreData = JSON.parse(explore.output)
 assert(Array.isArray(exploreData.plugins), "plugins explore should return plugins")
 assert(exploreData.plugins.some(p => p.name === "commiat"), "explore filters should find commiat")
 
+const stripeExplore = runNoServer("plugins explore --name stripe --tags payments --json")
+assert(stripeExplore.ok, "stripe explore should succeed")
+const stripeExploreData = JSON.parse(stripeExplore.output)
+assert(stripeExploreData.plugins.some(p => p.name === "stripe"), "explore filters should find stripe")
+
 const repoPath = makeRemotePluginRepo()
 const install = runNoServer(`plugins install --git ${repoPath} --manifest-path plugins/supercli/plugin.json --ref main --json`)
 assert(install.ok, "remote git install should succeed")
