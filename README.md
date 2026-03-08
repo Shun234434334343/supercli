@@ -1,6 +1,6 @@
-# dcli: Universal Cross-Harness CLI Router
+# supercli — Universal Skill Router for AI Agents
 
-Route commands across dozens of popular CLIs (GitHub, AWS, Docker, Kubernetes, Google Workspace, and more) through a unified skills discovery and execution layer.
+Discover and execute skills across CLIs, APIs, MCP servers, workflows, and custom automations through a single agent-friendly interface.
 
 ## BIN Aliases
 
@@ -9,50 +9,87 @@ Route commands across dozens of popular CLIs (GitHub, AWS, Docker, Kubernetes, G
 - scli (Brand smaller)
 - superacli (What was available) (Super Agent/ic CLI)
 
-## What is a Cross-Harness Router?
+## What Is a Skill Layer?
 
-A **harness** is a bridge to an external CLI tool. dcli acts as a unified **router** for commands and skills across:
+Everything the system exposes becomes a **skill**:
 
-- **Bundled Harnesses**: beads (task/issue management), gwc (Google Workspace), commiat (commit automation)
-- **Built-in Adapters**: OpenAPI specs, raw HTTP, MCP (Model Context Protocol) servers
-- **Plugin Harnesses**: Community-contributed and custom CLIs installed as plugins
-- **Future Harnesses**: Popular CLIs like gh (GitHub), aws (AWS), docker, kubectl, etc.
+| Source | Turns into |
+| --- | --- |
+| CLI command | Skill |
+| OpenAPI endpoint | Skill |
+| MCP tool | Skill |
+| HTTP request | Skill |
+| Workflow / plan step | Skill |
 
-Through a single interface, you can:
-1. **Discover** skills across all connected harnesses
-2. **Route** commands to the appropriate harness
-3. **Execute** with unified output formatting
-4. **Extend** by adding new harnesses as plugins
+Agents query the skill layer once, and supercli handles discovery, routing, and execution across every connected ecosystem. Skills are addressable (e.g., `beads.issue.list` or `docker.container.ps`), searchable, and consistently described so agents never need bespoke integrations per tool.
 
-Example: Execute commands across different harnesses with consistent routing:
+### Core Responsibilities
+
+1. **Discovery** – build a real-time catalog of skills across bundled harnesses, adapters, and plugins.
+2. **Routing** – resolve the right execution adapter (CLI, HTTP, MCP, custom runtime) from an incoming skill ID.
+3. **Execution** – normalize inputs/outputs, enforce envelopes, and surface deterministic status codes.
+4. **Extension** – let teams add new skills by dropping in manifests, OpenAPI specs, or plugin harnesses.
+
+Example skill executions:
+
 ```bash
-supercli beads issue list              # Route to beads harness
-supercli gwc drive files list          # Route to Google Workspace harness
-supercli docker container ps           # Route to Docker harness (when plugin installed)
+supercli beads issue list              # Calls beads skill adapter
+supercli gwc drive files list          # Calls Google Workspace adapter
+supercli docker container ps           # Calls Docker plugin (when installed)
 ```
+
+## Skill Sources
+
+supercli generates skills from six primary channels:
+
+- **Bundled Harnesses** – beads (tasks/issues), gwc (Google Workspace), commiat (commit automation)
+- **Built-in Adapters** – OpenAPI specs, raw HTTP integrations, MCP (Model Context Protocol) servers
+- **Plugin Harnesses** – community or internal CLIs installed via `supercli plugins install`
+- **AI & Plans** – natural-language `ask` commands create execution DAGs composed of skills
+- **Workflows** – repeatable plans and stored executions referenced as skills
+- **Future Extensions** – popular CLIs such as gh, aws, docker, kubectl, terraform, etc.
 
 ## Architecture
 
 ```
-        Web UI (EJS + Vue3 + DaisyUI)
-                    │
-                REST API
-                    │
-        Cross-Harness Skills Router
-                    │
-    ┌───────────────┼─────────────┬──────────────┐
-    │               │             │              │
- Bundled         Built-in      Plugin       Community
-Harnesses       Adapters      Harnesses     Harnesses
-(beads, gwc,   (OpenAPI,    (beads, gwc,   (gh, aws,
- commiat)      HTTP, MCP)    commiat)      docker, etc)
+           Agents / Humans
+                  │
+            supercli runtime
+                  │
+            Skill Discovery Layer
+                  │
+             Skill Router Core
+                  │
+   ┌──────────────┼──────────────┬───────────────┐
+   │              │              │               │
+ CLI Harnesses  OpenAPI / HTTP  MCP Servers   Workflows / Plugins
 ```
 
 The router intelligently:
-- **Discovers** available skills from all harnesses
-- **Routes** commands to appropriate harnesses based on namespace
-- **Executes** with unified error handling and output formatting
-- **Caches** skills for fast discovery and AI resolution
+- **Discovers** available skills from every adapter and caches metadata for fast lookup
+- **Routes** commands to the correct harness based on namespace and capability metadata
+- **Executes** with unified error handling, envelopes, and output formatting
+- **Surfaces** machine-readable descriptions so agents can plan against the skill graph
+
+## Why Skills Matter
+
+Traditional CLIs force agents to learn tool-specific syntax. supercli replaces that effort with a discoverable skill graph so agents can:
+
+- Search (`supercli skills search "database"`) to find relevant capabilities instantly
+- Inspect (`supercli skills get beads.issue.create`) to pull schema-rich metadata
+- Compose (`supercli plan …`) to build DAGs out of skills without writing glue code
+- Delegate execution to the same router regardless of whether the source is a CLI, API, or MCP tool
+
+## Skill Mesh Vision
+
+supercli is steadily evolving toward a broader **skill mesh** that provides discovery, routing, execution, composition, and governance across every tool in the stack. Near-term focus areas include:
+
+- **Deeper skill registry** with richer metadata, tagging, and policy controls
+- **Graph-native discovery** so agents can traverse related skills and capability clusters
+- **Execution DAG observability** for multi-skill plans with retries and status streaming
+- **Agent endpoints** that expose the router over HTTP/webhooks for direct agent access beyond the CLI
+
+These directional goals keep the README aligned with the system’s trajectory without overpromising unshipped features.
 
 ## Quick Start
 
