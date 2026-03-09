@@ -360,4 +360,6 @@ Contributions are welcome! If you have ideas for improvements, new adapters, or 
 
 ## License
 
-MIT
+MIT License - Copyright (c) 2026 Javier Leandro Arancibia
+
+See [LICENSE](LICENSE) file for details.
