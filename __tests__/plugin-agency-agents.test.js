@@ -1,9 +1,9 @@
 const { spawnSync } = require("child_process")
 const { addProvider, syncCatalog } = require("../cli/skills-catalog")
 const {
-  installAgencyAgentsSkillProvider,
+  run,
   buildRemoteEntriesFromTree
-} = require("../cli/plugin-agency-agents")
+} = require("../plugins/agency-agents/scripts/post-install")
 
 jest.mock("child_process")
 jest.mock("../cli/skills-catalog")
@@ -28,7 +28,7 @@ describe("plugin-agency-agents", () => {
     expect(entries[1].id).toBe("marketing.marketing-growth-hacker")
   })
 
-  test("installAgencyAgentsSkillProvider stores provider and syncs catalog", () => {
+  test("run stores provider and syncs catalog", () => {
     spawnSync.mockReturnValue({
       status: 0,
       stdout: JSON.stringify({
@@ -40,7 +40,7 @@ describe("plugin-agency-agents", () => {
     })
     syncCatalog.mockReturnValue({ skills: [1, 2, 3] })
 
-    const result = installAgencyAgentsSkillProvider()
+    const result = run()
 
     expect(addProvider).toHaveBeenCalledWith(expect.objectContaining({
       name: "agency-agents",
@@ -55,8 +55,8 @@ describe("plugin-agency-agents", () => {
     })
   })
 
-  test("installAgencyAgentsSkillProvider throws on curl failure", () => {
+  test("run throws on curl failure", () => {
     spawnSync.mockReturnValue({ status: 22, stderr: "404" })
-    expect(() => installAgencyAgentsSkillProvider()).toThrow(/Failed to fetch agency-agents metadata/)
+    expect(() => run()).toThrow(/Failed to fetch agency-agents metadata/)
   })
 })
