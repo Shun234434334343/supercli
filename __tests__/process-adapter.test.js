@@ -113,4 +113,31 @@ describe("process adapter", () => {
     const result = await promise
     expect(result.raw).toBe("text")
   })
+
+  test("streams jsonl events incrementally", async () => {
+    const onStreamEvent = jest.fn()
+    const promise = execute({ adapterConfig: { command: "node", stream: "jsonl" } }, {}, { onStreamEvent })
+    mockChild.stdout.emit("data", '{"type":"say","text":"one"}\n{"type":"say"')
+    mockChild.stdout.emit("data", ',"text":"two"}\n')
+    mockChild.emit("close", 0)
+    const result = await promise
+    expect(onStreamEvent).toHaveBeenCalledTimes(2)
+    expect(onStreamEvent.mock.calls[0][0]).toEqual({ type: "say", text: "one" })
+    expect(result).toEqual({
+      streamed: true,
+      stream: "jsonl",
+      event_count: 2,
+      last_event: { type: "say", text: "two" }
+    })
+  })
+
+  test("flushes trailing jsonl line without newline", async () => {
+    const onStreamEvent = jest.fn()
+    const promise = execute({ adapterConfig: { command: "node", stream: "jsonl" } }, {}, { onStreamEvent })
+    mockChild.stdout.emit("data", '{"type":"task_started","taskId":"123"}')
+    mockChild.emit("close", 0)
+    const result = await promise
+    expect(onStreamEvent).toHaveBeenCalledWith({ type: "task_started", taskId: "123" })
+    expect(result.event_count).toBe(1)
+  })
 })

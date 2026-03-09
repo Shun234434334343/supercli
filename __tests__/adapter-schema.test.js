@@ -54,6 +54,9 @@ describe("adapter-schema", () => {
     expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", flagsBeforePositionals: "yes" } })).toThrow(/must be boolean/)
     expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", missingDependencyHelp: 1 } })).toThrow(/must be string/)
     expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", env: [] } })).toThrow(/must be object/)
+    expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", stream: true } })).toThrow(/must be string/)
+    expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", stream: "sse" } })).toThrow(/must be 'jsonl'/)
+    expect(() => validateAdapterConfig({ adapter: "process", adapterConfig: { command: "a", stream: "jsonl" } })).not.toThrow()
   })
 
   test("builtin adapter validation", () => {

@@ -77,7 +77,27 @@ function validateNonTtySafety(cfg, args) {
   }
 }
 
-async function execute(cmd, flags) {
+function parseJsonLine(text) {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return { raw: text }
+  }
+}
+
+function flushStreamBuffer(buffer, onLine) {
+  let pending = buffer
+  let newlineIndex = pending.indexOf("\n")
+  while (newlineIndex >= 0) {
+    const line = pending.slice(0, newlineIndex).trim()
+    pending = pending.slice(newlineIndex + 1)
+    if (line) onLine(line)
+    newlineIndex = pending.indexOf("\n")
+  }
+  return pending
+}
+
+async function execute(cmd, flags, context = {}) {
   const cfg = cmd.adapterConfig || {}
   const binary = cfg.command
   if (!binary) throw new Error("Process adapter requires adapterConfig.command")
@@ -93,6 +113,8 @@ async function execute(cmd, flags) {
   const passthroughInteractive = passthroughMode && flags.__passthroughInteractive === true
   const cwd = typeof cfg.cwd === "string" ? cfg.cwd : undefined
   const env = (cfg.env && typeof cfg.env === "object") ? { ...process.env, ...cfg.env } : process.env
+  const streamMode = cfg.stream || null
+  const onStreamEvent = typeof context.onStreamEvent === "function" ? context.onStreamEvent : null
 
   const check = preflightBinary(binary)
   if (!check.ok) {
@@ -136,6 +158,9 @@ async function execute(cmd, flags) {
     const child = spawn(binary, args, { stdio: passthroughInteractive ? "inherit" : ["ignore", "pipe", "pipe"], cwd, env })
     let out = ""
     let err = ""
+    let streamBuffer = ""
+    let streamEventCount = 0
+    let lastStreamEvent = null
     let settled = false
 
     const timer = setTimeout(() => {
@@ -152,7 +177,16 @@ async function execute(cmd, flags) {
     if (!passthroughInteractive) {
       child.stdout.setEncoding("utf-8")
       child.stderr.setEncoding("utf-8")
-      child.stdout.on("data", chunk => { out += chunk })
+      child.stdout.on("data", chunk => {
+        out += chunk
+        if (streamMode !== "jsonl") return
+        streamBuffer = flushStreamBuffer(streamBuffer + chunk, line => {
+          const event = parseJsonLine(line)
+          streamEventCount += 1
+          lastStreamEvent = event
+          if (onStreamEvent) onStreamEvent(event)
+        })
+      })
       child.stderr.on("data", chunk => { err += chunk })
     }
 
@@ -191,6 +225,23 @@ async function execute(cmd, flags) {
 
       if (passthroughInteractive) {
         resolve({ ok: true, passthrough: true })
+        return
+      }
+
+      if (streamMode === "jsonl") {
+        const trailing = streamBuffer.trim()
+        if (trailing) {
+          const event = parseJsonLine(trailing)
+          streamEventCount += 1
+          lastStreamEvent = event
+          if (onStreamEvent) onStreamEvent(event)
+        }
+        resolve({
+          streamed: true,
+          stream: streamMode,
+          event_count: streamEventCount,
+          last_event: lastStreamEvent
+        })
         return
       }
 

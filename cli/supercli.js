@@ -100,6 +100,18 @@ function output(data) {
   console.log(str);
 }
 
+function makeStreamEmitter(commandName) {
+  if (humanMode) return null
+  return (event) => {
+    output({
+      version: "1.0",
+      command: commandName,
+      stream: true,
+      data: event,
+    })
+  }
+}
+
 function outputHumanTable(rows, columns) {
   if (!humanMode) return false;
   if (!rows || rows.length === 0) {
@@ -574,7 +586,13 @@ async function main() {
             __rawArgs: passthrough.passthroughArgs,
             __passthroughInteractive: humanMode && isTTY,
           },
-          { server: SERVER || "", config },
+          {
+            server: SERVER || "",
+            config,
+            onStreamEvent: passthrough.command.adapterConfig && passthrough.command.adapterConfig.stream === "jsonl"
+              ? makeStreamEmitter(`${passthrough.namespace}.passthrough`)
+              : null,
+          },
         );
         const duration = Date.now() - start;
         const envelope = {
@@ -710,7 +728,13 @@ async function main() {
     }
 
     const start = Date.now();
-    const result = await execute(cmd, uFlags, { server: SERVER || "", config });
+    const result = await execute(cmd, uFlags, {
+      server: SERVER || "",
+      config,
+      onStreamEvent: cmd.adapterConfig && cmd.adapterConfig.stream === "jsonl"
+        ? makeStreamEmitter(`${namespace}.${resource}.${action}`)
+        : null,
+    });
     const duration = Date.now() - start;
 
     const envelope = {

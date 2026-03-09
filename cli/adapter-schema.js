@@ -22,6 +22,7 @@ function validateCommonConfig(adapterName, config) {
   assertType(config.non_interactive, "boolean", "non_interactive")
   assertType(config.cwd, "string", "cwd")
   assertType(config.safetyLevel, "string", "safetyLevel")
+  assertType(config.stream, "string", "stream")
   if (config.interactiveFlags !== undefined && !Array.isArray(config.interactiveFlags)) {
     throw asInvalid("adapterConfig.interactiveFlags must be an array")
   }
@@ -38,6 +39,10 @@ function validateCommonConfig(adapterName, config) {
     if (config.timeout_ms > 15000) {
       throw asInvalid("adapterConfig.timeout_ms cannot exceed 15000ms")
     }
+  }
+
+  if (config.stream !== undefined && !["jsonl"].includes(config.stream)) {
+    throw asInvalid("adapterConfig.stream must be 'jsonl'")
   }
 }
 
