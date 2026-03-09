@@ -40,8 +40,9 @@ function writeFakeLinearBinary(dir) {
 
 describe("linear plugin", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-linear-"))
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-home-linear-"))
   writeFakeLinearBinary(fakeDir)
-  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}` }
+  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}`, SUPERCLI_HOME: tempHome }
 
   beforeAll(() => {
     runNoServer("plugins install ./plugins/linear --on-conflict replace --json", { env })
@@ -50,6 +51,7 @@ describe("linear plugin", () => {
   afterAll(() => {
     runNoServer("plugins remove linear --json", { env })
     fs.rmSync(fakeDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
   })
 
   test("routes account whoami wrapped command", () => {

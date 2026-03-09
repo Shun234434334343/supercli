@@ -39,8 +39,9 @@ function writeFakeDockerBinary(dir) {
 
 describe("docker plugin", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-docker-"))
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-home-docker-"))
   writeFakeDockerBinary(fakeDir)
-  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}` }
+  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}`, SUPERCLI_HOME: tempHome }
 
   beforeAll(() => {
     runNoServer("plugins install ./plugins/docker --on-conflict replace --json", { env })
@@ -49,6 +50,7 @@ describe("docker plugin", () => {
   afterAll(() => {
     runNoServer("plugins remove docker --json", { env })
     fs.rmSync(fakeDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
   })
 
   test("routes docker container ls to docker ps", () => {
