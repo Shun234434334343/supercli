@@ -8,7 +8,6 @@ jest.mock("fs")
 jest.mock("child_process")
 jest.mock("../cli/plugins-store")
 jest.mock("../cli/plugins-registry")
-jest.mock("../cli/plugin-agency-agents")
 
 const {
   installPlugin,
@@ -27,7 +26,6 @@ const {
 } = require("../cli/plugins-store")
 
 const { getRegistryPlugin } = require("../cli/plugins-registry")
-const { installAgencyAgentsSkillProvider } = require("../cli/plugin-agency-agents")
 
 describe("plugins-manager", () => {
   beforeEach(() => {
@@ -230,18 +228,30 @@ describe("plugins-manager", () => {
       fs.existsSync.mockReturnValue(true)
       fs.statSync.mockReturnValue({ isDirectory: () => false })
       fs.readFileSync.mockReturnValue(JSON.stringify(manifest))
-      installAgencyAgentsSkillProvider.mockReturnValue({ provider: "agency-agents", entries: 1, synced_skills: 1 })
-    })
-
-    test("runs agency-agents post install mapping", () => {
-      fs.readFileSync.mockReturnValue(JSON.stringify({ name: "agency-agents", commands: [] }))
-      const result = installPlugin("agency-agents")
-      expect(installAgencyAgentsSkillProvider).toHaveBeenCalled()
-      expect(result.post_install).toEqual({ provider: "agency-agents", entries: 1, synced_skills: 1 })
     })
 
     test("throws on invalid onConflict", () => {
       expect(() => installPlugin("p1", { onConflict: "invalid" })).toThrow(/Invalid --on-conflict/)
+    })
+
+    test("runs manifest-defined post install hook", () => {
+      fs.readFileSync.mockReturnValue(JSON.stringify({
+        name: "visual-explainer",
+        commands: [],
+        post_install: { script: "scripts/post-install.js" }
+      }))
+      spawnSync.mockReturnValue({ status: 0, stdout: "{\"provider\":\"visual-explainer\"}" })
+      const result = installPlugin("visual-explainer")
+      expect(result.post_install).toEqual({ provider: "visual-explainer" })
+    })
+
+    test("rejects post install path traversal", () => {
+      fs.readFileSync.mockReturnValue(JSON.stringify({
+        name: "visual-explainer",
+        commands: [],
+        post_install: { script: "../evil.js" }
+      }))
+      expect(() => installPlugin("visual-explainer")).toThrow(/Invalid post-install script path/)
     })
 
     test("handles same plugin command (skip logic)", () => {
