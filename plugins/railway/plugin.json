@@ -1,0 +1,43 @@
+{
+  "name": "railway",
+  "version": "0.1.0",
+  "description": "Railway CLI plugin for dcli",
+  "source": "https://docs.railway.com/guides/cli",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "railway"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "railway",
+      "resource": "account",
+      "action": "whoami",
+      "description": "Show the currently logged in Railway user",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "railway",
+        "baseArgs": ["whoami"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please install the Railway CLI to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "railway",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any Railway CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "railway",
+        "passthrough": true,
+        "parseJson": true,
+        "missingDependencyHelp": "Please install the Railway CLI to use this command."
+      },
+      "args": []
+    }
+  ]
+}
