@@ -39,8 +39,9 @@ function writeFakeStripeBinary(dir) {
 
 describe("stripe plugin", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-stripe-"))
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-home-stripe-"))
   writeFakeStripeBinary(fakeDir)
-  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}` }
+  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}`, SUPERCLI_HOME: tempHome }
 
   beforeAll(() => {
     runNoServer("plugins install ./plugins/stripe --on-conflict replace --json", { env })
@@ -49,6 +50,7 @@ describe("stripe plugin", () => {
   afterAll(() => {
     runNoServer("plugins remove stripe --json", { env })
     fs.rmSync(fakeDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
   })
 
   test("routes customers list command", () => {

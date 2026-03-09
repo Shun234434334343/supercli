@@ -43,8 +43,9 @@ function writeFakeRailwayBinary(dir) {
 
 describe("railway plugin", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-railway-"))
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-home-railway-"))
   writeFakeRailwayBinary(fakeDir)
-  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}` }
+  const env = { ...process.env, PATH: `${fakeDir}:${process.env.PATH || ""}`, SUPERCLI_HOME: tempHome }
 
   beforeAll(() => {
     runNoServer("plugins install ./plugins/railway --on-conflict replace --json", { env })
@@ -53,6 +54,7 @@ describe("railway plugin", () => {
   afterAll(() => {
     runNoServer("plugins remove railway --json", { env })
     fs.rmSync(fakeDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
   })
 
   test("routes account whoami wrapped command", () => {
