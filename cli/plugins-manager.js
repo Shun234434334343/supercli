@@ -19,6 +19,41 @@ const BUNDLED_PLUGINS = {
   "visual-explainer": path.resolve(__dirname, "..", "plugins", "visual-explainer", "plugin.json")
 }
 
+function validateNodeHook(hook, kind) {
+  if (!hook) return null
+  if (!hook.script || typeof hook.script !== "string") {
+    throw Object.assign(new Error(`Invalid plugin manifest: ${kind}.script must be a string`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
+  const runtime = hook.runtime || "node"
+  if (runtime !== "node") {
+    throw Object.assign(new Error(`Invalid plugin manifest: ${kind}.runtime must be 'node'`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
+  const timeoutMs = hook.timeout_ms === undefined ? 15000 : Number(hook.timeout_ms)
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 15000) {
+    throw Object.assign(new Error(`Invalid plugin manifest: ${kind}.timeout_ms must be a positive number <= 15000`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
+  return {
+    script: hook.script,
+    runtime,
+    timeout_ms: timeoutMs
+  }
+}
+
 function commandKey(cmd) {
   return `${cmd.namespace}.${cmd.resource}.${cmd.action}`
 }
@@ -217,72 +252,47 @@ function parsePostInstallResult(stdout) {
   }
 }
 
-function runPostInstall(manifest, manifestPath) {
-  const hook = manifest.post_install
-  if (!hook) return null
-  if (!hook.script || typeof hook.script !== "string") {
-    throw Object.assign(new Error("Invalid plugin manifest: post_install.script must be a string"), {
-      code: 85,
-      type: "invalid_argument",
-      recoverable: false
-    })
-  }
-
-  const runtime = hook.runtime || "node"
-  if (runtime !== "node") {
-    throw Object.assign(new Error("Invalid plugin manifest: post_install.runtime must be 'node'"), {
-      code: 85,
-      type: "invalid_argument",
-      recoverable: false
-    })
-  }
-
-  const timeoutMs = hook.timeout_ms === undefined ? 15000 : Number(hook.timeout_ms)
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 15000) {
-    throw Object.assign(new Error("Invalid plugin manifest: post_install.timeout_ms must be a positive number <= 15000"), {
-      code: 85,
-      type: "invalid_argument",
-      recoverable: false
-    })
-  }
-
-  const manifestDir = path.dirname(manifestPath)
-  const scriptPath = path.resolve(manifestDir, hook.script)
+function resolveHookScriptPath(manifestDir, script, kind) {
+  const scriptPath = path.resolve(manifestDir, script)
   const normalizedBase = path.resolve(manifestDir) + path.sep
   if (!scriptPath.startsWith(normalizedBase)) {
-    throw Object.assign(new Error(`Invalid post-install script path '${hook.script}'`), {
+    throw Object.assign(new Error(`Invalid ${kind} script path '${script}'`), {
       code: 85,
       type: "invalid_argument",
       recoverable: false
     })
   }
   if (!fs.existsSync(scriptPath)) {
-    throw Object.assign(new Error(`Post-install script not found: ${hook.script}`), {
+    throw Object.assign(new Error(`${kind} script not found: ${script}`), {
       code: 92,
       type: "resource_not_found",
       recoverable: false
     })
   }
+  return scriptPath
+}
 
+function runNodeHook(pluginName, kind, hook, scriptPath, env = {}) {
   const result = spawnSync("node", [scriptPath], {
     encoding: "utf-8",
-    timeout: timeoutMs,
+    timeout: hook.timeout_ms,
     env: {
       ...process.env,
-      SUPERCLI_PLUGIN_NAME: manifest.name,
-      SUPERCLI_PLUGIN_DIR: manifestDir
+      ...env,
+      SUPERCLI_PLUGIN_NAME: pluginName,
+      SUPERCLI_PLUGIN_DIR: path.dirname(scriptPath)
     }
   })
 
   if (result.error) {
-    throw Object.assign(new Error(`Post-install hook failed for '${manifest.name}': ${result.error.message}`), {
+    throw Object.assign(new Error(`${kind} hook failed for '${pluginName}': ${result.error.message}`), {
       code: 105,
       type: "integration_error",
       recoverable: true
     })
   }
   if (result.status !== 0) {
-    throw Object.assign(new Error(`Post-install hook failed for '${manifest.name}': ${(result.stderr || "").trim() || `exit ${result.status}`}`), {
+    throw Object.assign(new Error(`${kind} hook failed for '${pluginName}': ${(result.stderr || "").trim() || `exit ${result.status}`}`), {
       code: 105,
       type: "integration_error",
       recoverable: true
@@ -290,6 +300,60 @@ function runPostInstall(manifest, manifestPath) {
   }
 
   return parsePostInstallResult(result.stdout)
+}
+
+function runPostInstall(manifest, manifestPath) {
+  const hook = validateNodeHook(manifest.post_install, "post_install")
+  if (!hook) return null
+  const manifestDir = path.dirname(manifestPath)
+  const scriptPath = resolveHookScriptPath(manifestDir, hook.script, "post-install")
+  return runNodeHook(manifest.name, "Post-install", hook, scriptPath)
+}
+
+function serializeHook(manifestPath, hook, kind) {
+  const validHook = validateNodeHook(hook, kind)
+  if (!validHook) return null
+  const manifestDir = path.dirname(manifestPath)
+  const scriptPath = resolveHookScriptPath(manifestDir, validHook.script, kind.replace(/_/g, "-"))
+  return {
+    runtime: validHook.runtime,
+    timeout_ms: validHook.timeout_ms,
+    script_path: scriptPath,
+    script_name: path.basename(scriptPath),
+    script_source: fs.readFileSync(scriptPath, "utf-8")
+  }
+}
+
+function runStoredHook(pluginName, kind, storedHook) {
+  if (!storedHook) return null
+  const runtime = storedHook.runtime || "node"
+  if (runtime !== "node") {
+    throw Object.assign(new Error(`Unsupported stored ${kind} runtime '${runtime}' for '${pluginName}'`), {
+      code: 85,
+      type: "invalid_argument",
+      recoverable: false
+    })
+  }
+
+  if (storedHook.script_path && fs.existsSync(storedHook.script_path)) {
+    return runNodeHook(pluginName, `Post-${kind}`, {
+      runtime,
+      timeout_ms: Number(storedHook.timeout_ms) || 15000
+    }, storedHook.script_path)
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dcli-plugin-hook-"))
+  try {
+    const scriptName = storedHook.script_name || `${kind}.js`
+    const scriptPath = path.join(tmpDir, scriptName)
+    fs.writeFileSync(scriptPath, storedHook.script_source || "")
+    return runNodeHook(pluginName, `Post-${kind}`, {
+      runtime,
+      timeout_ms: Number(storedHook.timeout_ms) || 15000
+    }, scriptPath)
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  }
 }
 
 function checkBinary(binary) {
@@ -442,7 +506,10 @@ function installPlugin(ref, options = {}) {
       resolved_from: loaded.resolvedFrom,
       installed_at: new Date().toISOString(),
       commands: installedCommands,
-      checks: manifest.checks || []
+      checks: manifest.checks || [],
+      lifecycle_hooks: {
+        post_uninstall: serializeHook(loaded.manifestPath, manifest.post_uninstall, "post_uninstall")
+      }
     }
 
     const postInstall = runPostInstall(manifest, loaded.manifestPath)
@@ -461,7 +528,9 @@ function installPlugin(ref, options = {}) {
 
 function removePlugin(name) {
   const lock = readPluginsLock()
-  if (!lock.installed[name]) return false
+  const plugin = lock.installed[name]
+  if (!plugin) return false
+  runStoredHook(name, "uninstall", plugin.lifecycle_hooks && plugin.lifecycle_hooks.post_uninstall)
   delete lock.installed[name]
   writePluginsLock(lock)
   return true

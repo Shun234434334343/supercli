@@ -254,6 +254,22 @@ describe("plugins-manager", () => {
       expect(() => installPlugin("visual-explainer")).toThrow(/Invalid post-install script path/)
     })
 
+    test("stores serialized uninstall hook for later removal", () => {
+      fs.readFileSync
+        .mockReturnValueOnce(JSON.stringify({
+          name: "nullclaw",
+          commands: [],
+          post_uninstall: { script: "scripts/post-uninstall.js" }
+        }))
+        .mockReturnValueOnce("module.exports = {}")
+      fs.existsSync.mockReturnValue(true)
+      fs.statSync.mockReturnValue({ isDirectory: () => false })
+
+      installPlugin("nullclaw")
+      const writtenLock = writePluginsLock.mock.calls[0][0]
+      expect(writtenLock.installed.nullclaw.lifecycle_hooks.post_uninstall.script_source).toBe("module.exports = {}")
+    })
+
     test("handles same plugin command (skip logic)", () => {
       readPluginsLock.mockReturnValue({
         installed: { p1: { name: "p1", commands: [{ namespace: "n", resource: "r", action: "a" }] } }
@@ -301,6 +317,29 @@ describe("plugins-manager", () => {
     test("removePlugin success", () => {
       readPluginsLock.mockReturnValue({ installed: { p1: { name: "p1" } } })
       expect(removePlugin("p1")).toBe(true)
+    })
+    test("removePlugin runs stored uninstall hook", () => {
+      fs.mkdtempSync.mockReturnValue("/tmp/dcli-plugin-hook-123")
+      readPluginsLock.mockReturnValue({
+        installed: {
+          p1: {
+            name: "p1",
+            lifecycle_hooks: {
+              post_uninstall: {
+                runtime: "node",
+                timeout_ms: 1000,
+                script_name: "post-uninstall.js",
+                script_source: "process.stdout.write(JSON.stringify({ok:true}))"
+              }
+            }
+          }
+        }
+      })
+      spawnSync.mockReturnValue({ status: 0, stdout: "{\"ok\":true}" })
+      expect(removePlugin("p1")).toBe(true)
+      expect(spawnSync).toHaveBeenCalled()
+      const writtenLock = writePluginsLock.mock.calls[0][0]
+      expect(writtenLock.installed.p1).toBeUndefined()
     })
     test("removePlugin fail", () => {
       readPluginsLock.mockReturnValue({ installed: {} })
