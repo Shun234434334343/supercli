@@ -38,6 +38,33 @@
       }
     },
     {
+      "name": "vercel",
+      "description": "Vercel CLI plugin with account wrapper and passthrough",
+      "tags": ["vercel", "deployments", "hosting", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/vercel/plugin.json"
+      }
+    },
+    {
+      "name": "linear",
+      "description": "Linear CLI plugin with account wrapper and passthrough",
+      "tags": ["linear", "issues", "project-management", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/linear/plugin.json"
+      }
+    },
+    {
+      "name": "railway",
+      "description": "Railway CLI plugin with account wrapper and passthrough",
+      "tags": ["railway", "deployments", "infrastructure", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/railway/plugin.json"
+      }
+    },
+    {
       "name": "commiat",
       "description": "AI-assisted git commit message plugin",
       "tags": ["git", "commit", "ai", "developer-experience"],
@@ -55,6 +82,15 @@
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/agency-agents/plugin.json"
+      }
+    },
+    {
+      "name": "visual-explainer",
+      "description": "Indexes normalized visual-explainer markdown skills from javimosch/visual-explainer",
+      "tags": ["skills", "visualization", "catalog", "remote"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/visual-explainer/plugin.json"
       }
     }
   ]
