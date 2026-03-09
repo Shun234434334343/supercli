@@ -44,3 +44,14 @@ supercli skills get agency-agents:engineering.engineering-frontend-developer
 `agency-agents` maps skills one-to-one to upstream `.md` files in
 `msitarzewski/agency-agents`. If upstream paths change or files are removed,
 individual skills may stop resolving until reinstalled/refreshed.
+
+## Remote Provider Example: visual-explainer
+
+```bash
+supercli plugins install visual-explainer --json
+supercli skills list --catalog --provider visual-explainer --json
+supercli skills get visual-explainer:visual-explainer.skill
+```
+
+`visual-explainer` maps skills to normalized markdown files under
+`plugins/visual-explainer-normalized` in `javimosch/visual-explainer`.
