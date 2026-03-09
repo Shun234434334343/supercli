@@ -1,0 +1,37 @@
+{
+  "name": "openfang",
+  "version": "0.1.0",
+  "description": "OpenFang - Agent Operating System. CLI passthrough + 60+ bundled skills for AI agents",
+  "source": "https://github.com/RightNow-AI/openfang",
+  "checks": [
+    { "type": "binary", "name": "openfang" }
+  ],
+  "post_install": {
+    "script": "scripts/post-install.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "post_uninstall": {
+    "script": "scripts/post-uninstall.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "commands": [
+    {
+      "namespace": "openfang",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any openfang CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openfang",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Run: curl -fsSL https://openfang.sh/install | sh"
+      },
+      "args": []
+    }
+  ]
+}
+
