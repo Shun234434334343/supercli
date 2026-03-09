@@ -281,6 +281,15 @@
         "type": "bundled",
         "manifest_path": "plugins/clickup/plugin.json"
       }
+    },
+    {
+      "name": "openfang",
+      "description": "OpenFang - Agent Operating System. CLI passthrough + 60+ bundled skills (aws, kubernetes, docker, etc.)",
+      "tags": ["openfang", "agents", "ai", "autonomous", "skills", "passthrough", "rust"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/openfang/plugin.json"
+      }
     }
   ]
 }
