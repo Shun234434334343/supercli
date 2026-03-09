@@ -1,5 +1,3 @@
-const { execute } = require("../cli/adapters/openapi")
-
 describe("openapi adapter", () => {
   const mockSpec = {
     servers: [{ url: "https://api.test/v1" }],
@@ -11,7 +9,9 @@ describe("openapi adapter", () => {
             { name: "id", in: "path" },
             { name: "q", in: "query" }
           ]
-        },
+        }
+      },
+      "/users": {
         post: {
           operationId: "createUser"
         }
@@ -19,9 +19,13 @@ describe("openapi adapter", () => {
     }
   }
 
+  let execute;
+
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.resetModules()
     global.fetch = jest.fn()
+    execute = require("../cli/adapters/openapi").execute
   })
 
   test("throws if spec or operationId missing", async () => {
@@ -29,13 +33,12 @@ describe("openapi adapter", () => {
   })
 
   test("successfully executes GET operation with path and query params", async () => {
-    // 1. Fetch spec from local config
     global.fetch
-      .mockResolvedValueOnce({ // fetchSpec fetch
+      .mockResolvedValueOnce({ 
         ok: true,
         json: () => Promise.resolve(mockSpec)
       })
-      .mockResolvedValueOnce({ // actual API call fetch
+      .mockResolvedValueOnce({ 
         ok: true,
         headers: { get: () => "application/json" },
         json: () => Promise.resolve({ user: "alice" })
@@ -61,53 +64,11 @@ describe("openapi adapter", () => {
 
   test("successfully executes POST operation with body", async () => {
     global.fetch
-      .mockResolvedValueOnce({ // fetchSpec fetch
+      .mockResolvedValueOnce({ 
         ok: true,
         json: () => Promise.resolve(mockSpec)
       })
-      .mockResolvedValueOnce({ // actual API call fetch
-        ok: true,
-        headers: { get: () => "text/plain" },
-        text: () => Promise.resolve("done")
-      })
-
-    const context = {
-      config: {
-        specs: [{ name: "my-spec", url: "u" }]
-      }
-    }
-
-    const result = await execute({
-      adapterConfig: { spec: "my-spec", operationId: "createUser" }
-    }, { name: "bob" }, context)
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.test/v1/users",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ name: "bob" })
-      })
-    )
-    expect(result).toEqual({ raw: "done" })
-  })
-
-  test("handles API call failure (500)", async () => {
-    global.fetch
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockSpec) })
       .mockResolvedValueOnce({ 
-        ok: false, 
-        status: 500, 
-        statusText: "Err", 
-        text: () => Promise.resolve("body"),
-        headers: { get: () => "text/plain" }
-      })
-    
-    const context = { config: { specs: [{ name: "s", url: "u" }] } }
-    await expect(execute({
-      adapterConfig: { spec: "s", operationId: "getUser" }
-    }, { id: "1" }, context)).rejects.toMatchObject({ code: 105 })
-  })
-      .mockResolvedValueOnce({ // actual API call fetch
         ok: true,
         headers: { get: () => "text/plain" },
         text: () => Promise.resolve("done")
@@ -135,15 +96,15 @@ describe("openapi adapter", () => {
 
   test("resolves spec from remote server if not in local config", async () => {
     global.fetch
-      .mockResolvedValueOnce({ // fetchSpec list fetch
+      .mockResolvedValueOnce({ 
         ok: true,
         json: () => Promise.resolve([{ name: "remote-spec", url: "http://remote/spec.json" }])
       })
-      .mockResolvedValueOnce({ // fetch actual spec fetch
+      .mockResolvedValueOnce({ 
         ok: true,
         json: () => Promise.resolve(mockSpec)
       })
-      .mockResolvedValueOnce({ // API call
+      .mockResolvedValueOnce({ 
         ok: true,
         headers: { get: () => "json" },
         json: () => Promise.resolve({ ok: true })
@@ -206,7 +167,13 @@ describe("openapi adapter", () => {
   test("handles API call failure (500)", async () => {
     global.fetch
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockSpec) })
-      .mockResolvedValueOnce({ ok: false, status: 500, statusText: "Err", text: () => Promise.resolve("body") })
+      .mockResolvedValueOnce({ 
+        ok: false, 
+        status: 500, 
+        statusText: "Err", 
+        text: () => Promise.resolve("body"),
+        headers: { get: () => "text/plain" }
+      })
     
     const context = { config: { specs: [{ name: "s", url: "u" }] } }
     await expect(execute({
@@ -221,10 +188,11 @@ describe("openapi adapter", () => {
 
     const context = { config: { specs: [{ name: "cached", url: "u" }] } }
     
+    // First call: spec fetch + API call
     await execute({ adapterConfig: { spec: "cached", operationId: "getUser" } }, { id: "1" }, context)
+    // Second call: only API call (spec is cached)
     await execute({ adapterConfig: { spec: "cached", operationId: "getUser" } }, { id: "2" }, context)
 
-    // Spec fetched only once
     expect(global.fetch).toHaveBeenCalledWith("u")
     expect(global.fetch).toHaveBeenCalledTimes(3) // 1 spec fetch + 2 API calls
   })
