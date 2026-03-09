@@ -1,0 +1,42 @@
+{
+  "name": "linear",
+  "version": "0.1.0",
+  "description": "Linear CLI plugin for dcli",
+  "source": "https://linear.app",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "linear"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "linear",
+      "resource": "account",
+      "action": "whoami",
+      "description": "Show the currently logged in Linear user",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "linear",
+        "baseArgs": ["auth", "whoami"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install the Linear CLI to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "linear",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any Linear CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "linear",
+        "passthrough": true,
+        "parseJson": true,
+        "missingDependencyHelp": "Please install the Linear CLI to use this command."
+      },
+      "args": []
+    }
+  ]
+}
