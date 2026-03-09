@@ -65,6 +65,159 @@
       }
     },
     {
+      "name": "supabase",
+      "description": "Supabase CLI plugin with projects wrapper and passthrough",
+      "tags": ["supabase", "database", "backend", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/supabase/plugin.json"
+      }
+    },
+    {
+      "name": "gh",
+      "description": "GitHub CLI plugin with auth wrapper and passthrough",
+      "tags": ["github", "gh", "git", "developer-tools"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/gh/plugin.json"
+      }
+    },
+    {
+      "name": "kubectl",
+      "description": "kubectl plugin with context wrapper and passthrough",
+      "tags": ["kubernetes", "kubectl", "containers", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/kubectl/plugin.json"
+      }
+    },
+    {
+      "name": "terraform",
+      "description": "Terraform CLI plugin with version wrapper and passthrough",
+      "tags": ["terraform", "infrastructure", "iac", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/terraform/plugin.json"
+      }
+    },
+    {
+      "name": "aws",
+      "description": "AWS CLI plugin with identity wrapper and passthrough",
+      "tags": ["aws", "cloud", "infrastructure", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/aws/plugin.json"
+      }
+    },
+    {
+      "name": "gcloud",
+      "description": "Google Cloud CLI plugin with account wrapper and passthrough",
+      "tags": ["gcloud", "google-cloud", "cloud", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/gcloud/plugin.json"
+      }
+    },
+    {
+      "name": "az",
+      "description": "Azure CLI plugin with account wrapper and passthrough",
+      "tags": ["azure", "az", "cloud", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/az/plugin.json"
+      }
+    },
+    {
+      "name": "helm",
+      "description": "Helm CLI plugin with version wrapper and passthrough",
+      "tags": ["helm", "kubernetes", "charts", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/helm/plugin.json"
+      }
+    },
+    {
+      "name": "npm",
+      "description": "npm CLI plugin with version wrapper and passthrough",
+      "tags": ["npm", "node", "packages", "javascript"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/npm/plugin.json"
+      }
+    },
+    {
+      "name": "pulumi",
+      "description": "Pulumi CLI plugin with version wrapper and passthrough",
+      "tags": ["pulumi", "infrastructure", "iac", "devops"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/pulumi/plugin.json"
+      }
+    },
+    {
+      "name": "pnpm",
+      "description": "pnpm CLI plugin with version wrapper and passthrough",
+      "tags": ["pnpm", "node", "packages", "javascript"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/pnpm/plugin.json"
+      }
+    },
+    {
+      "name": "uv",
+      "description": "uv CLI plugin with version wrapper and passthrough",
+      "tags": ["uv", "python", "packages", "packaging"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/uv/plugin.json"
+      }
+    },
+    {
+      "name": "poetry",
+      "description": "Poetry CLI plugin with version wrapper and passthrough",
+      "tags": ["poetry", "python", "packages", "packaging"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/poetry/plugin.json"
+      }
+    },
+    {
+      "name": "eza",
+      "description": "eza CLI plugin with version wrapper and passthrough",
+      "tags": ["eza", "rust", "filesystem", "developer-tools"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/eza/plugin.json"
+      }
+    },
+    {
+      "name": "just",
+      "description": "just CLI plugin with version wrapper and passthrough",
+      "tags": ["just", "rust", "task-runner", "developer-tools"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/just/plugin.json"
+      }
+    },
+    {
+      "name": "watchexec",
+      "description": "watchexec CLI plugin with version wrapper and passthrough",
+      "tags": ["watchexec", "rust", "file-watchers", "developer-tools"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/watchexec/plugin.json"
+      }
+    },
+    {
+      "name": "nextest",
+      "description": "cargo-nextest CLI plugin with version wrapper and passthrough",
+      "tags": ["nextest", "rust", "testing", "cargo-plugin"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/nextest/plugin.json"
+      }
+    },
+    {
       "name": "commiat",
       "description": "AI-assisted git commit message plugin",
       "tags": ["git", "commit", "ai", "developer-experience"],
