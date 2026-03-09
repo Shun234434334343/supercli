@@ -256,6 +256,37 @@ const PLUGIN_INSTALL_GUIDANCE = {
     ],
     note: "Install cargo-nextest with prebuilt binaries or cargo. Most commands are intended for Rust workspaces, but version and help commands work anywhere."
   },
+  cline: {
+    plugin: "cline",
+    binary: "cline",
+    check: "cline --version",
+    install_steps: [
+      "npm install -g cline",
+      "cline --version",
+      "supercli plugins install cline",
+      "supercli cline cli version --json",
+      "supercli cline task run --prompt \"List files with more LOC in cwd\" --cwd . --timeout 30 --json",
+      "supercli skills sync --json",
+      "supercli skills get repo:cline-non-interactive"
+    ],
+    note: "Prefer the wrapped cline task run/plan commands for unattended automation. They bake in documented non-interactive defaults with JSON streaming support and are easier for agents to parse than raw passthrough."
+  },
+  nullclaw: {
+    plugin: "nullclaw",
+    binary: "nullclaw",
+    check: "nullclaw --version",
+    install_steps: [
+      "supercli plugins install nullclaw",
+      "curl --version",
+      "brew install nullclaw",
+      "nullclaw --version",
+      "supercli skills list --catalog --provider nullclaw --json",
+      "supercli skills get nullclaw:root.agents",
+      "supercli nullclaw cli version --json",
+      "supercli nullclaw system status --json"
+    ],
+    note: "This hybrid plugin indexes remote NullClaw docs into the local skills catalog and exposes the local nullclaw binary through wrapped commands plus passthrough. curl is required for remote doc retrieval."
+  },
   "agency-agents": {
     plugin: "agency-agents",
     binary: "curl",

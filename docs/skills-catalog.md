@@ -55,3 +55,27 @@ supercli skills get visual-explainer:visual-explainer.skill
 
 `visual-explainer` maps skills to normalized markdown files under
 `plugins/visual-explainer-normalized` in `javimosch/visual-explainer`.
+
+## Remote Provider Example: nullclaw
+
+```bash
+supercli plugins install nullclaw --json
+supercli skills list --catalog --provider nullclaw --json
+supercli skills get nullclaw:root.agents
+supercli skills get nullclaw:docs.en.commands
+```
+
+`nullclaw` indexes curated upstream markdown from `nullclaw/nullclaw` so agents can pull
+project overview, operator docs, security guidance, and implementation notes on demand.
+It also exposes the local `nullclaw` binary through wrapped commands and full passthrough.
+
+## Local Repo Skill Example: cline-non-interactive
+
+```bash
+supercli skills sync --json
+supercli skills list --catalog --provider repo --json
+supercli skills get repo:cline-non-interactive
+```
+
+`cline-non-interactive` is a repository-local skill that teaches agents to prefer the wrapped
+`supercli cline task run` and `supercli cline task plan` commands for unattended Cline usage.

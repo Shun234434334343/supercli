@@ -220,7 +220,7 @@ supercli --help-json                       # Machine-readable capabilities
 A **plugin harness** bridges dcli to an external CLI tool. Each plugin:
 - Defines a manifest (`plugin.json`) with available commands
 - Maps CLI arguments to dcli's command structure
-- Supports either command wrapping (selective commands) or passthrough (full CLI)
+- Supports command wrapping, passthrough, remote skills catalogs, or any combination of those patterns
 - Includes dependency checks and installation guidance
 
 ### Currently Supported Harnesses

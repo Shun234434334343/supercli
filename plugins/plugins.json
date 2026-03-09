@@ -218,6 +218,24 @@
       }
     },
     {
+      "name": "cline",
+      "description": "Cline CLI plugin with rich non-interactive task wrappers and passthrough",
+      "tags": ["cline", "agents", "automation", "streaming", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/cline/plugin.json"
+      }
+    },
+    {
+      "name": "nullclaw",
+      "description": "Hybrid NullClaw plugin with remote docs catalog plus local CLI passthrough",
+      "tags": ["nullclaw", "skills", "agents", "zig", "passthrough"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/nullclaw/plugin.json"
+      }
+    },
+    {
       "name": "commiat",
       "description": "AI-assisted git commit message plugin",
       "tags": ["git", "commit", "ai", "developer-experience"],

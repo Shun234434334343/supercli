@@ -178,6 +178,16 @@ assert(nextestExplore.ok, "nextest explore should succeed")
 const nextestExploreData = JSON.parse(nextestExplore.output)
 assert(nextestExploreData.plugins.some(p => p.name === "nextest"), "explore filters should find nextest")
 
+const clineExplore = runNoServer("plugins explore --name cline --tags streaming --json")
+assert(clineExplore.ok, "cline explore should succeed")
+const clineExploreData = JSON.parse(clineExplore.output)
+assert(clineExploreData.plugins.some(p => p.name === "cline"), "explore filters should find cline")
+
+const nullclawExplore = runNoServer("plugins explore --name nullclaw --tags skills --json")
+assert(nullclawExplore.ok, "nullclaw explore should succeed")
+const nullclawExploreData = JSON.parse(nullclawExplore.output)
+assert(nullclawExploreData.plugins.some(p => p.name === "nullclaw"), "explore filters should find nullclaw")
+
 const repoPath = makeRemotePluginRepo()
 const install = runNoServer(`plugins install --git ${repoPath} --manifest-path plugins/supercli/plugin.json --ref main --json`)
 assert(install.ok, "remote git install should succeed")
