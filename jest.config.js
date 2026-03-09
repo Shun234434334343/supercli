@@ -6,8 +6,10 @@ module.exports = {
   coverageProvider: "v8",
   collectCoverageFrom: [
     "cli/**/*.js",
+    "server/**/*.js",
     "!cli/supercli.js",
-    "!cli/adapters/**"
+    "!cli/plugin-agency-agents.js",
+    "!server/public/**"
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "clover"],
