@@ -11,6 +11,7 @@ module.exports = {
     "!cli/plugin-agency-agents.js",
     "!server/public/**"
   ],
+  testPathIgnorePatterns: ["/node_modules/", "/ref-btcbot/"],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "clover"],
   coverageThreshold: {
