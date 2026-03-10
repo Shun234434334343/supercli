@@ -1,0 +1,88 @@
+{
+  "name": "mongosh",
+  "version": "0.1.0",
+  "description": "mongosh CLI plugin for dcli",
+  "source": "https://www.mongodb.com/docs/mongodb-shell/",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "mongosh"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "mongosh",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show mongosh CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mongosh",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install mongosh to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "mongosh",
+      "resource": "server",
+      "action": "ping",
+      "description": "Run a MongoDB admin ping through mongosh",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mongosh",
+        "baseArgs": ["--quiet", "--json=relaxed", "--eval", "db.adminCommand({ ping: 1 })"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install mongosh to use this command."
+      },
+      "args": [
+        { "name": "host", "type": "string", "required": false },
+        { "name": "port", "type": "integer", "required": false },
+        { "name": "username", "type": "string", "required": false },
+        { "name": "password", "type": "string", "required": false },
+        { "name": "authenticationDatabase", "type": "string", "required": false },
+        { "name": "tls", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "mongosh",
+      "resource": "eval",
+      "action": "run",
+      "description": "Run JavaScript in mongosh with relaxed JSON output",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mongosh",
+        "baseArgs": ["--quiet", "--json=relaxed", "--eval"],
+        "positionalArgs": ["javascript"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install mongosh to use this command."
+      },
+      "args": [
+        { "name": "javascript", "type": "string", "required": true, "description": "JavaScript expression to evaluate" },
+        { "name": "host", "type": "string", "required": false },
+        { "name": "port", "type": "integer", "required": false },
+        { "name": "username", "type": "string", "required": false },
+        { "name": "password", "type": "string", "required": false },
+        { "name": "authenticationDatabase", "type": "string", "required": false },
+        { "name": "tls", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "mongosh",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any mongosh command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mongosh",
+        "passthrough": true,
+        "parseJson": true,
+        "missingDependencyHelp": "Please install mongosh to use this command."
+      },
+      "args": []
+    }
+  ]
+}
