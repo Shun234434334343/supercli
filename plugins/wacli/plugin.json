@@ -1,0 +1,260 @@
+{
+  "name": "wacli",
+  "version": "0.1.0",
+  "description": "wacli WhatsApp CLI plugin with safe read-only wrappers",
+  "source": "https://github.com/steipete/wacli",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "wacli"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "wacli",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show wacli CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "wacli",
+      "resource": "doctor",
+      "action": "run",
+      "description": "Run wacli diagnostics as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["doctor", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "auth",
+      "action": "status",
+      "description": "Show authentication status as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["auth", "status", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "chats",
+      "action": "list",
+      "description": "List chats as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["chats", "list", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "store", "type": "string", "required": false },
+        { "name": "query", "type": "string", "required": false },
+        { "name": "limit", "type": "integer", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "chats",
+      "action": "show",
+      "description": "Show a chat by JID as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["chats", "show", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "jid", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "messages",
+      "action": "list",
+      "description": "List messages as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["messages", "list", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "store", "type": "string", "required": false },
+        { "name": "chat", "type": "string", "required": false },
+        { "name": "limit", "type": "integer", "required": false },
+        { "name": "before", "type": "string", "required": false },
+        { "name": "after", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "messages",
+      "action": "search",
+      "description": "Search messages as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["messages", "search", "--json"],
+        "positionalArgs": ["query"],
+        "flagsBeforePositionals": false,
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "query", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false },
+        { "name": "chat", "type": "string", "required": false },
+        { "name": "from", "type": "string", "required": false },
+        { "name": "limit", "type": "integer", "required": false },
+        { "name": "before", "type": "string", "required": false },
+        { "name": "after", "type": "string", "required": false },
+        { "name": "type", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "messages",
+      "action": "show",
+      "description": "Show a specific message as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["messages", "show", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "chat", "type": "string", "required": true },
+        { "name": "id", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "messages",
+      "action": "context",
+      "description": "Show message context as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["messages", "context", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "chat", "type": "string", "required": true },
+        { "name": "id", "type": "string", "required": true },
+        { "name": "before", "type": "integer", "required": false },
+        { "name": "after", "type": "integer", "required": false },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "contacts",
+      "action": "search",
+      "description": "Search contacts as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["contacts", "search", "--json"],
+        "positionalArgs": ["query"],
+        "flagsBeforePositionals": false,
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "query", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "contacts",
+      "action": "show",
+      "description": "Show a contact by JID as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["contacts", "show", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "jid", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "groups",
+      "action": "list",
+      "description": "List groups as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["groups", "list", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "store", "type": "string", "required": false },
+        { "name": "query", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "wacli",
+      "resource": "groups",
+      "action": "info",
+      "description": "Show group info as JSON",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "wacli",
+        "baseArgs": ["groups", "info", "--json"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install wacli to use this command."
+      },
+      "args": [
+        { "name": "jid", "type": "string", "required": true },
+        { "name": "store", "type": "string", "required": false }
+      ]
+    }
+  ]
+}
