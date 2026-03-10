@@ -1,0 +1,64 @@
+{
+  "name": "mysql",
+  "version": "0.1.0",
+  "description": "MySQL CLI plugin for dcli",
+  "source": "https://dev.mysql.com/doc/refman/en/mysql.html",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "mysql"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "mysql",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show MySQL CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mysql",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install the MySQL CLI to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "mysql",
+      "resource": "query",
+      "action": "execute",
+      "description": "Execute a SQL query with batch-friendly MySQL output",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mysql",
+        "baseArgs": ["--batch", "--raw", "--skip-column-names"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install the MySQL CLI to use this command."
+      },
+      "args": [
+        { "name": "execute", "type": "string", "required": true, "description": "SQL statement to execute" },
+        { "name": "host", "type": "string", "required": false },
+        { "name": "port", "type": "integer", "required": false },
+        { "name": "user", "type": "string", "required": false },
+        { "name": "password", "type": "string", "required": false },
+        { "name": "database", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "mysql",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any MySQL CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "mysql",
+        "passthrough": true,
+        "parseJson": true,
+        "missingDependencyHelp": "Please install the MySQL CLI to use this command."
+      },
+      "args": []
+    }
+  ]
+}
