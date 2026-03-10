@@ -296,6 +296,21 @@ const PLUGIN_INSTALL_GUIDANCE = {
     ],
     note: "This hybrid plugin indexes the upstream BlogWatcher README and SKILL documents into the skills catalog and exposes non-interactive wrappers for the local CLI. BlogWatcher stores data under ~/.blogwatcher, so use an isolated HOME when you want disposable test data."
   },
+  himalaya: {
+    plugin: "himalaya",
+    binary: "himalaya",
+    check: "himalaya --version",
+    install_steps: [
+      "brew install himalaya",
+      "cargo install himalaya --locked",
+      "himalaya --version",
+      "supercli plugins install himalaya",
+      "supercli himalaya account list --json",
+      "supercli himalaya folder list --account personal --json",
+      "supercli himalaya envelope list --account personal --folder INBOX --page 1 --json"
+    ],
+    note: "Prefer the wrapped read-only commands for automation. Himalaya itself uses --output json rather than --json, and interactive or write-side flows like account configure, message send, and mailbox mutation are intentionally left out of wrapped v1."
+  },
   cline: {
     plugin: "cline",
     binary: "cline",

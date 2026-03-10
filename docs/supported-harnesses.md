@@ -218,6 +218,14 @@ These harnesses are in active development and will be available as plugins. Stat
 
 ---
 
+### Communication
+
+| Harness | CLI | Status | Purpose |
+|---------|-----|--------|---------|
+| **himalaya** | himalaya | Available via plugin | Read-only email account, folder, envelope, and preview workflows |
+
+---
+
 ### Version Control & Release
 
 | Harness | CLI | Status | Purpose |
