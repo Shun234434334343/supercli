@@ -193,6 +193,11 @@ assert(blogwatcherExplore.ok, "blogwatcher explore should succeed")
 const blogwatcherExploreData = JSON.parse(blogwatcherExplore.output)
 assert(blogwatcherExploreData.plugins.some(p => p.name === "blogwatcher"), "explore filters should find blogwatcher")
 
+const himalayaExplore = runNoServer("plugins explore --name himalaya --tags email --json")
+assert(himalayaExplore.ok, "himalaya explore should succeed")
+const himalayaExploreData = JSON.parse(himalayaExplore.output)
+assert(himalayaExploreData.plugins.some(p => p.name === "himalaya"), "explore filters should find himalaya")
+
 const clineExplore = runNoServer("plugins explore --name cline --tags streaming --json")
 assert(clineExplore.ok, "cline explore should succeed")
 const clineExploreData = JSON.parse(clineExplore.output)
