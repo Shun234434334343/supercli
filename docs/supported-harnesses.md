@@ -223,6 +223,7 @@ These harnesses are in active development and will be available as plugins. Stat
 | Harness | CLI | Status | Purpose |
 |---------|-----|--------|---------|
 | **himalaya** | himalaya | Available via plugin | Read-only email account, folder, envelope, and preview workflows |
+| **wacli** | wacli | Available via plugin | Read-only WhatsApp diagnostics, chats, messages, contacts, and groups |
 
 ---
 

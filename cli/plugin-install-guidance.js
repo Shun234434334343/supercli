@@ -311,6 +311,21 @@ const PLUGIN_INSTALL_GUIDANCE = {
     ],
     note: "Prefer the wrapped read-only commands for automation. Himalaya itself uses --output json rather than --json, and interactive or write-side flows like account configure, message send, and mailbox mutation are intentionally left out of wrapped v1."
   },
+  wacli: {
+    plugin: "wacli",
+    binary: "wacli",
+    check: "wacli --version",
+    install_steps: [
+      "brew install steipete/tap/wacli",
+      "go build -tags sqlite_fts5 -o ./dist/wacli ./cmd/wacli",
+      "wacli --version",
+      "supercli plugins install wacli",
+      "supercli wacli doctor run --json",
+      "supercli wacli auth status --json",
+      "supercli wacli chats list --store ~/.wacli --json"
+    ],
+    note: "This plugin intentionally wraps only read-only diagnostics and local-store inspection commands. Use the upstream wacli CLI directly for QR auth, sync loops, sending messages, media download, and group/contact mutations."
+  },
   cline: {
     plugin: "cline",
     binary: "cline",

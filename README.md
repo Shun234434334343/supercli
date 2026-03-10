@@ -247,6 +247,7 @@ A **plugin harness** bridges dcli to an external CLI tool. Each plugin:
 - MySQL (`mysql`)
 - MongoDB Shell (`mongosh`)
 - Himalaya Email CLI (`himalaya`)
+- WhatsApp CLI (`wacli`)
 - npm, pip, cargo (package managers)
 - git, git-cliff (version control)
 - And many more...
