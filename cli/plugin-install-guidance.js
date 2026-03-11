@@ -326,6 +326,36 @@ const PLUGIN_INSTALL_GUIDANCE = {
     ],
     note: "This plugin intentionally wraps only read-only diagnostics and local-store inspection commands. Use the upstream wacli CLI directly for QR auth, sync loops, sending messages, media download, and group/contact mutations."
   },
+  xurl: {
+    plugin: "xurl",
+    binary: "xurl",
+    check: "xurl version",
+    install_steps: [
+      "brew install --cask xdevplatform/tap/xurl",
+      "npm install -g @xdevplatform/xurl",
+      "go install github.com/xdevplatform/xurl@latest",
+      "xurl version",
+      "supercli plugins install xurl",
+      "supercli skills list --catalog --provider xurl --json",
+      "supercli xurl auth status --json",
+      "supercli xurl account whoami --json"
+    ],
+    note: "This hybrid plugin indexes upstream xurl docs and exposes a curated set of read-only wrappers. Use the upstream xurl CLI directly for auth setup, posting, likes, follows, raw requests, streams, webhooks, and any command that can mutate X state."
+  },
+  clix: {
+    plugin: "clix",
+    binary: "clix",
+    check: "clix auth status --json",
+    install_steps: [
+      "uv pip install clix0",
+      "clix auth",
+      "supercli plugins install clix",
+      "supercli skills list --catalog --provider clix --json",
+      "supercli clix auth status --json",
+      "supercli clix timeline list --count 10 --json"
+    ],
+    note: "This hybrid plugin indexes upstream clix docs and exposes curated read-only wrappers. Use upstream clix directly for cookie login, account switching, posting, deleting, likes, retweets, and bookmark mutations."
+  },
   cline: {
     plugin: "cline",
     binary: "cline",

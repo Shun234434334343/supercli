@@ -263,6 +263,24 @@
       }
     },
     {
+      "name": "xurl",
+      "description": "Hybrid xurl plugin with remote docs and safe read-only X API wrappers",
+      "tags": ["xurl", "x", "twitter", "skills", "api"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/xurl/plugin.json"
+      }
+    },
+    {
+      "name": "clix",
+      "description": "Hybrid clix plugin with remote docs and safe read-only X wrappers",
+      "tags": ["clix", "x", "twitter", "skills", "agents"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/clix/plugin.json"
+      }
+    },
+    {
       "name": "cline",
       "description": "Cline CLI plugin with rich non-interactive task wrappers and passthrough",
       "tags": ["cline", "agents", "automation", "streaming", "passthrough"],
