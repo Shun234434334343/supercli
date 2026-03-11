@@ -203,6 +203,16 @@ assert(wacliExplore.ok, "wacli explore should succeed")
 const wacliExploreData = JSON.parse(wacliExplore.output)
 assert(wacliExploreData.plugins.some(p => p.name === "wacli"), "explore filters should find wacli")
 
+const xurlExplore = runNoServer("plugins explore --name xurl --tags twitter --json")
+assert(xurlExplore.ok, "xurl explore should succeed")
+const xurlExploreData = JSON.parse(xurlExplore.output)
+assert(xurlExploreData.plugins.some(p => p.name === "xurl"), "explore filters should find xurl")
+
+const clixExplore = runNoServer("plugins explore --name clix --tags agents --json")
+assert(clixExplore.ok, "clix explore should succeed")
+const clixExploreData = JSON.parse(clixExplore.output)
+assert(clixExploreData.plugins.some(p => p.name === "clix"), "explore filters should find clix")
+
 const clineExplore = runNoServer("plugins explore --name cline --tags streaming --json")
 assert(clineExplore.ok, "cline explore should succeed")
 const clineExploreData = JSON.parse(clineExplore.output)
