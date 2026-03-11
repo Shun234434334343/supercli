@@ -1,6 +1,7 @@
 const { createPlan } = require("./planner")
 
 const PLUGINS_USAGE_SKILL_ID = "plugins.registry.usage"
+const MCP_SERVERS_USAGE_SKILL_ID = "mcp.servers.usage"
 const {
   listProviders,
   addProvider,
@@ -221,6 +222,49 @@ function buildPluginsUsageSkillMarkdown(options = {}) {
   return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nUse this workflow for plugin discovery and installation:\n\n1. Explore registry metadata (name/description/tags):\n\n\`\`\`bash\nsupercli plugins explore --json\nsupercli plugins explore --name commiat --json\nsupercli plugins explore --tags git,ai --json\n\`\`\`\n\n2. Install by registry name:\n\n\`\`\`bash\nsupercli plugins install commiat --json\n\`\`\`\n\n3. Install directly from a remote git repository:\n\n\`\`\`bash\nsupercli plugins install --git https://github.com/org/repo.git --manifest-path plugins/supercli/plugin.json --ref main --json\n\`\`\`\n\n4. Validate installed plugin health and guidance:\n\n\`\`\`bash\nsupercli plugins doctor commiat --json\nsupercli plugins show commiat --json\n\`\`\`\n\n5. Use the namespace command exposed by the plugin.\n\n# Examples\n\n\`\`\`bash\nsupercli skills get ${PLUGINS_USAGE_SKILL_ID} --format skill.md\nsupercli skills get ${PLUGINS_USAGE_SKILL_ID} --format skill.md --show-dag\n\`\`\``
 }
 
+function buildMcpServersUsageSkillMarkdown(options = {}) {
+  const includeDag = !!options.showDag
+  const frontmatter = {
+    skill_name: "mcp_servers_usage",
+    description: "Teaches agents how to manage and use MCP servers through SuperCLI, including browser-use style SSE bridges.",
+    command: `skills get ${MCP_SERVERS_USAGE_SKILL_ID}`,
+    arguments: [
+      {
+        name: "format",
+        type: "string",
+        required: false,
+        description: "Output format, default skill.md"
+      },
+      {
+        name: "show-dag",
+        type: "boolean",
+        required: false,
+        description: "Include internal DAG for agent reasoning"
+      }
+    ],
+    output_schema: {
+      instruction: "string",
+      examples: "array"
+    },
+    metadata: {
+      side_effects: false,
+      risk_level: "safe",
+      dag_supported: true
+    }
+  }
+
+  if (includeDag) {
+    frontmatter.dag = [
+      { id: 1, type: "list_mcp_servers" },
+      { id: 2, type: "register_or_update_mcp_server", depends_on: [1] },
+      { id: 3, type: "verify_mcp_server_configuration", depends_on: [2] },
+      { id: 4, type: "execute_mcp_backed_command", depends_on: [3] }
+    ]
+  }
+
+  return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nUse this workflow to manage and use MCP servers safely in non-interactive agent flows:\n\n1. List registered MCP servers and inspect current state:\n\n\`\`\`bash\nsupercli mcp list --json\n\`\`\`\n\n2. Register or update a server by URL (HTTP MCP):\n\n\`\`\`bash\nsupercli mcp add summarize-local --url http://127.0.0.1:8787 --json\n\`\`\`\n\n3. Register a stdio bridge server (browser-use style over remote SSE using mcp-remote):\n\n\`\`\`bash\n# Provide key at runtime; do not hardcode secrets in repository files\nsupercli mcp add browser-use --command npx \\\n  --args-json '["mcp-remote","https://api.browser-use.com/mcp","--header","X-Browser-Use-API-Key: \${BROWSER_USE_API_KEY}"]' \\\n  --env-json '{"BROWSER_USE_API_KEY":"\${BROWSER_USE_API_KEY}"}' \\\n  --json\n\`\`\`\n\n4. Verify the MCP server registration:\n\n\`\`\`bash\nsupercli mcp list --json\n\`\`\`\n\n5. Execute MCP-backed commands normally once configured:\n\n\`\`\`bash\n# Example command that uses adapter: mcp under the hood\nsupercli ai browser probe --json\n\`\`\`\n\n6. Remove stale MCP entries when no longer needed:\n\n\`\`\`bash\nsupercli mcp remove browser-use --json\n\`\`\`\n\n# Notes\n\n- Prefer passing secrets via runtime environment variables and CLI args, not committed files.\n- For named MCP servers, command-level adapter settings override server-level defaults on conflicts.\n- Use \`supercli skills teach --format skill.md\` for general skills discovery guidance.`
+}
+
 function listSkillsMetadata(config) {
   const commandSkills = (config.commands || []).map(cmd => ({
     name: `${cmd.namespace}.${cmd.resource}.${cmd.action}`,
@@ -229,6 +273,10 @@ function listSkillsMetadata(config) {
   commandSkills.push({
     name: PLUGINS_USAGE_SKILL_ID,
     description: "Discover and install plugins from the registry or remote git repos"
+  })
+  commandSkills.push({
+    name: MCP_SERVERS_USAGE_SKILL_ID,
+    description: "Manage MCP servers and execute MCP-backed commands (including browser-use style bridges)"
   })
   return commandSkills
 }
@@ -386,6 +434,11 @@ function handleSkillsCommand(options) {
       return true
     }
 
+    if (parsed.id === MCP_SERVERS_USAGE_SKILL_ID) {
+      console.log(buildMcpServersUsageSkillMarkdown({ showDag: !!flags["show-dag"] }))
+      return true
+    }
+
     const cmd = config.commands.find(c =>
       c.namespace === parsed.namespace && c.resource === parsed.resource && c.action === parsed.action
     )
@@ -404,10 +457,12 @@ function handleSkillsCommand(options) {
 
 module.exports = {
   PLUGINS_USAGE_SKILL_ID,
+  MCP_SERVERS_USAGE_SKILL_ID,
   normalizeSkillId,
   buildCommandSkillMarkdown,
   buildTeachSkillMarkdown,
   buildPluginsUsageSkillMarkdown,
+  buildMcpServersUsageSkillMarkdown,
   listSkillsMetadata,
   handleSkillsCommand,
   renderYamlObject // Export for testing coverage
