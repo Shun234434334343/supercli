@@ -1,4 +1,5 @@
 const { createPlan } = require("./planner")
+const { buildMcpServersUsageSkillMarkdown: buildMcpUsage } = require("./skills-mcp")
 
 const PLUGINS_USAGE_SKILL_ID = "plugins.registry.usage"
 const MCP_SERVERS_USAGE_SKILL_ID = "mcp.servers.usage"
@@ -223,46 +224,11 @@ function buildPluginsUsageSkillMarkdown(options = {}) {
 }
 
 function buildMcpServersUsageSkillMarkdown(options = {}) {
-  const includeDag = !!options.showDag
-  const frontmatter = {
-    skill_name: "mcp_servers_usage",
-    description: "Teaches agents how to manage and use MCP servers through SuperCLI, including browser-use style SSE bridges.",
-    command: `skills get ${MCP_SERVERS_USAGE_SKILL_ID}`,
-    arguments: [
-      {
-        name: "format",
-        type: "string",
-        required: false,
-        description: "Output format, default skill.md"
-      },
-      {
-        name: "show-dag",
-        type: "boolean",
-        required: false,
-        description: "Include internal DAG for agent reasoning"
-      }
-    ],
-    output_schema: {
-      instruction: "string",
-      examples: "array"
-    },
-    metadata: {
-      side_effects: false,
-      risk_level: "safe",
-      dag_supported: true
-    }
-  }
-
-  if (includeDag) {
-    frontmatter.dag = [
-      { id: 1, type: "list_mcp_servers" },
-      { id: 2, type: "register_or_update_mcp_server", depends_on: [1] },
-      { id: 3, type: "verify_mcp_server_configuration", depends_on: [2] },
-      { id: 4, type: "execute_mcp_backed_command", depends_on: [3] }
-    ]
-  }
-
-  return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nUse this workflow to manage and use MCP servers safely in non-interactive agent flows:\n\n1. List registered MCP servers and inspect current state:\n\n\`\`\`bash\nsupercli mcp list --json\n\`\`\`\n\n2. Register or update a server by URL (HTTP MCP):\n\n\`\`\`bash\nsupercli mcp add summarize-local --url http://127.0.0.1:8787 --json\n\`\`\`\n\n3. Register a stdio bridge server (browser-use style over remote SSE using mcp-remote):\n\n\`\`\`bash\n# Provide key at runtime; do not hardcode secrets in repository files\nsupercli mcp add browser-use --command npx \\\n  --args-json '["mcp-remote","https://api.browser-use.com/mcp","--header","X-Browser-Use-API-Key: \${BROWSER_USE_API_KEY}"]' \\\n  --env-json '{"BROWSER_USE_API_KEY":"\${BROWSER_USE_API_KEY}"}' \\\n  --json\n\`\`\`\n\n4. Verify the MCP server registration:\n\n\`\`\`bash\nsupercli mcp list --json\n\`\`\`\n\n5. Execute MCP-backed commands normally once configured:\n\n\`\`\`bash\n# Example command that uses adapter: mcp under the hood\nsupercli ai browser probe --json\n\`\`\`\n\n6. Remove stale MCP entries when no longer needed:\n\n\`\`\`bash\nsupercli mcp remove browser-use --json\n\`\`\`\n\n# Notes\n\n- Prefer passing secrets via runtime environment variables and CLI args, not committed files.\n- For named MCP servers, command-level adapter settings override server-level defaults on conflicts.\n- Use \`supercli skills teach --format skill.md\` for general skills discovery guidance.`
+  return buildMcpUsage({
+    showDag: !!options.showDag,
+    renderYamlObject,
+    skillId: MCP_SERVERS_USAGE_SKILL_ID,
+  })
 }
 
 function listSkillsMetadata(config) {
