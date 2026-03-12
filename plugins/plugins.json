@@ -375,8 +375,8 @@
     },
     {
       "name": "resend",
-      "description": "Resend CLI plugin for official email sending and environment diagnostics",
-      "tags": ["resend", "email", "api", "passthrough"],
+      "description": "Resend CLI plugin for official email sending, domain management, API keys, and audience contacts",
+      "tags": ["resend", "email", "api", "domains", "passthrough"],
       "has_learn": true,
       "source": {
         "type": "bundled",

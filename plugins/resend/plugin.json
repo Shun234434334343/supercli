@@ -1,7 +1,7 @@
 {
   "name": "resend",
-  "version": "0.1.0",
-  "description": "Resend CLI plugin: official tool for Resend emails, AI-friendly and non-interactive",
+  "version": "0.2.0",
+  "description": "Resend CLI plugin: official tool for Resend emails, domains, API keys, and audience management",
   "source": "https://github.com/resend/resend-cli",
   "checks": [
     { "type": "binary", "name": "node" },
@@ -32,6 +32,36 @@
         "baseArgs": ["scripts/setup-resend.js"],
         "parseJson": false,
         "timeout_ms": 120000
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "auth",
+      "action": "whoami",
+      "description": "Display the current authenticated user/identity",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["whoami"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "auth",
+      "action": "logout",
+      "description": "Log out and clear local credentials",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["logout"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
       },
       "args": []
     },
@@ -73,6 +103,253 @@
         { "name": "bcc", "type": "string", "required": false, "description": "BCC recipients" },
         { "name": "reply-to", "type": "string", "required": false, "description": "Reply-to email address" },
         { "name": "api-key", "type": "string", "required": false, "description": "Override API key" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "domains",
+      "action": "list",
+      "description": "List all domains in your account",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["domains", "list"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "domains",
+      "action": "create",
+      "description": "Create a new domain for sending/receiving",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["domains", "create"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "name", "type": "string", "required": true, "description": "Domain name (e.g., example.com)" },
+        { "name": "region", "type": "string", "required": false, "description": "Region (us-east-1, eu-west-1, etc.)" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "domains",
+      "action": "get",
+      "description": "Retrieve details for a specific domain",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["domains", "get"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true, "description": "Domain ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "domains",
+      "action": "delete",
+      "description": "Delete an existing domain",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["domains", "delete"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true, "description": "Domain ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "domains",
+      "action": "verify",
+      "description": "Verify an existing domain",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["domains", "verify"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true, "description": "Domain ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "api-keys",
+      "action": "list",
+      "description": "List all API keys in your account",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["api-keys", "list"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "api-keys",
+      "action": "create",
+      "description": "Create a new API key",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["api-keys", "create"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "name", "type": "string", "required": true, "description": "Name for the API key" },
+        { "name": "permission", "type": "string", "required": false, "description": "Permission (full_access, sending_access)" },
+        { "name": "domain-id", "type": "string", "required": false, "description": "Restrict to specific domain ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "api-keys",
+      "action": "delete",
+      "description": "Delete an existing API key",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["api-keys", "delete"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true, "description": "API Key ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "webhooks",
+      "action": "list",
+      "description": "List all webhooks in your account",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["webhooks", "list"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "webhooks",
+      "action": "create",
+      "description": "Create a new webhook",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["webhooks", "create"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "url", "type": "string", "required": true, "description": "Webhook endpoint URL (must be HTTPS)" },
+        { "name": "events", "type": "string", "required": true, "description": "Events to listen for (space-separated, or 'all')" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "webhooks",
+      "action": "delete",
+      "description": "Delete an existing webhook",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["webhooks", "delete"],
+        "positionalArgs": ["id"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": true, "description": "Webhook ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "contacts",
+      "action": "list",
+      "description": "List contacts in an audience",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["contacts", "list"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "audience-id", "type": "string", "required": true, "description": "Audience ID" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "contacts",
+      "action": "create",
+      "description": "Create a new contact",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["contacts", "create"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "audience-id", "type": "string", "required": true, "description": "Audience ID" },
+        { "name": "email", "type": "string", "required": true, "description": "Contact email address" },
+        { "name": "first-name", "type": "string", "required": false, "description": "First name" },
+        { "name": "last-name", "type": "string", "required": false, "description": "Last name" },
+        { "name": "unsubscribed", "type": "boolean", "required": false, "description": "Unsubscribed status" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "contacts",
+      "action": "delete",
+      "description": "Delete an existing contact",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["contacts", "delete"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "audience-id", "type": "string", "required": true, "description": "Audience ID" },
+        { "name": "id", "type": "string", "required": false, "description": "Contact ID" },
+        { "name": "email", "type": "string", "required": false, "description": "Contact email address" }
       ]
     },
     {
