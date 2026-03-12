@@ -3,7 +3,7 @@ function buildCapabilities(config, hasServer) {
     help: { description: "List namespaces and commands" },
     config: { subcommands: ["show"] },
     plugins: { subcommands: ["list", "explore", "install", "remove", "show", "doctor"], description: "Manage local and remote command plugins" },
-    mcp: { subcommands: ["list", "add", "remove"], description: "Manage local MCP server registry" },
+    mcp: { subcommands: ["list", "add", "tools", "call", "bind", "doctor", "remove"], description: "Manage local MCP server registry and invoke MCP tools" },
     commands: { description: "List all commands" },
     inspect: { description: "Inspect command details", usage: "supercli inspect <ns> <res> <act>" },
     plan: { description: "Create execution plan", usage: "supercli plan <ns> <res> <act> [--args]" },
