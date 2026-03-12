@@ -1,8 +1,76 @@
 const { Router } = require("express")
 const { getStorage } = require("../storage/adapter")
 const { bumpVersion } = require("../services/configService")
+const { validateAdapterConfig } = require("../../cli/adapter-schema")
 
 const router = Router()
+
+function invalid(message) {
+  return Object.assign(new Error(message), {
+    code: 85,
+    type: "invalid_argument",
+    recoverable: false,
+  })
+}
+
+function parseAdapterConfig(value) {
+  if (value === undefined || value === null || value === "") return {}
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value)
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw invalid("adapterConfig must be a JSON object")
+      }
+      return parsed
+    } catch (err) {
+      if (err.code === 85) throw err
+      throw invalid(`Invalid adapterConfig JSON: ${err.message}`)
+    }
+  }
+  if (typeof value === "object" && !Array.isArray(value)) return value
+  throw invalid("adapterConfig must be an object")
+}
+
+function parseArgs(value) {
+  if (value === undefined || value === null || value === "") return []
+  if (Array.isArray(value)) return value
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value)
+      if (!Array.isArray(parsed)) throw invalid("args must be a JSON array")
+      return parsed
+    } catch (err) {
+      if (err.code === 85) throw err
+      throw invalid(`Invalid args JSON: ${err.message}`)
+    }
+  }
+  throw invalid("args must be an array")
+}
+
+function normalizeCommandPayload(payload) {
+  const namespace = String(payload.namespace || "").trim()
+  const resource = String(payload.resource || "").trim()
+  const action = String(payload.action || "").trim()
+  if (!namespace || !resource || !action) {
+    throw invalid("namespace, resource, and action are required")
+  }
+
+  const adapter = String(payload.adapter || "http").trim()
+  const adapterConfig = parseAdapterConfig(payload.adapterConfig)
+  const args = parseArgs(payload.args)
+
+  validateAdapterConfig({ adapter, adapterConfig })
+
+  return {
+    namespace,
+    resource,
+    action,
+    description: String(payload.description || "").trim(),
+    adapter,
+    adapterConfig,
+    args,
+  }
+}
 
 // Helper to list all commands
 async function getAllCommands() {
@@ -30,6 +98,17 @@ router.get("/new", async (req, res) => {
   res.render("command-edit", { command: null })
 })
 
+// POST /api/commands/validate
+router.post("/validate", async (req, res) => {
+  try {
+    const normalized = normalizeCommandPayload(req.body || {})
+    res.json({ ok: true, command: normalized })
+  } catch (err) {
+    const status = err.code === 85 ? 400 : 500
+    res.status(status).json({ error: err.message, type: err.type || "internal_error" })
+  }
+})
+
 // GET /api/commands/:id/edit
 router.get("/:id/edit", async (req, res) => {
   try {
@@ -48,7 +127,8 @@ router.get("/:id/edit", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const storage = getStorage()
-    const { namespace, resource, action, description, adapter, adapterConfig, args } = req.body
+    const normalized = normalizeCommandPayload(req.body || {})
+    const { namespace, resource, action, description, adapter, adapterConfig, args } = normalized
     const key = `command:${namespace}.${resource}.${action}`
     
     // Check if exists? Overwrite is allowed for now, acts as upsert.
@@ -58,10 +138,10 @@ router.post("/", async (req, res) => {
       namespace,
       resource,
       action,
-      description: description || "",
-      adapter: adapter || "http",
-      adapterConfig: typeof adapterConfig === "string" ? JSON.parse(adapterConfig || "{}") : (adapterConfig || {}),
-      args: Array.isArray(args) ? args : JSON.parse(args || "[]"),
+      description,
+      adapter,
+      adapterConfig,
+      args,
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -74,7 +154,8 @@ router.post("/", async (req, res) => {
     }
     res.status(201).json(doc)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    const status = err.code === 85 ? 400 : 500
+    res.status(status).json({ error: err.message, type: err.type || "internal_error" })
   }
 })
 
@@ -83,7 +164,8 @@ router.put("/:id", async (req, res) => {
   try {
     const storage = getStorage()
     const id = decodeURIComponent(req.params.id)
-    const { namespace, resource, action, description, adapter, adapterConfig, args } = req.body
+    const normalized = normalizeCommandPayload(req.body || {})
+    const { namespace, resource, action, description, adapter, adapterConfig, args } = normalized
     
     // If n/r/a changed, the ID changes, we should delete the old one.
     const newKey = `command:${namespace}.${resource}.${action}`
@@ -96,17 +178,18 @@ router.put("/:id", async (req, res) => {
       namespace,
       resource,
       action,
-      description: description || "",
-      adapter: adapter || "http",
-      adapterConfig: typeof adapterConfig === "string" ? JSON.parse(adapterConfig || "{}") : (adapterConfig || {}),
-      args: Array.isArray(args) ? args : JSON.parse(args || "[]"),
+      description,
+      adapter,
+      adapterConfig,
+      args,
       updatedAt: new Date()
     }
     await storage.set(newKey, update)
     await bumpVersion()
     res.json({ ok: true })
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    const status = err.code === 85 ? 400 : 500
+    res.status(status).json({ error: err.message, type: err.type || "internal_error" })
   }
 })
 
