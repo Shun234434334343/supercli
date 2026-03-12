@@ -187,7 +187,17 @@ async function upsertCommand(commandDef) {
   cfg.commands = commands
   writeCache(cfg)
   return commandDef
- }
+}
+
+async function removeCommandsByNamespace(namespace) {
+  const cfg = readCache() || emptyConfig()
+  const commands = Array.isArray(cfg.commands) ? cfg.commands : []
+  const next = commands.filter(c => !(c && c.namespace === namespace))
+  const removed = commands.length - next.length
+  cfg.commands = next
+  writeCache(cfg)
+  return removed
+}
 
 async function showConfig() {
   const cache = readCache()
@@ -206,4 +216,4 @@ async function showConfig() {
   }
 }
 
-module.exports = { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listMcpServers, upsertCommand }
+module.exports = { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listMcpServers, upsertCommand, removeCommandsByNamespace }

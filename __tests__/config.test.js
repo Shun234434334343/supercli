@@ -14,7 +14,8 @@ const {
   setMcpServer,
   removeMcpServer,
   listMcpServers,
-  upsertCommand
+  upsertCommand,
+  removeCommandsByNamespace
 } = require("../cli/config")
 const { getInstalledPluginCommands, listInstalledPlugins } = require("../cli/plugins-store")
 
@@ -378,6 +379,25 @@ describe("config", () => {
       expect(result.commands).toBe(0)
       expect(result.mcp_servers).toBe(0)
       expect(result.specs).toBe(0)
+    })
+
+    test("removeCommandsByNamespace removes all matching namespace commands", async () => {
+      fs.existsSync.mockReturnValue(true)
+      fs.readFileSync.mockReturnValue(JSON.stringify({
+        commands: [
+          { namespace: "browseruse", resource: "tool", action: "list-skills" },
+          { namespace: "browseruse", resource: "tool", action: "browser-task" },
+          { namespace: "ai", resource: "text", action: "summarize" }
+        ]
+      }))
+
+      const removed = await removeCommandsByNamespace("browseruse")
+      expect(removed).toBe(2)
+
+      const lastWrite = JSON.parse(fs.writeFileSync.mock.calls[0][1])
+      expect(lastWrite.commands).toEqual([
+        { namespace: "ai", resource: "text", action: "summarize" }
+      ])
     })
   })
 })
