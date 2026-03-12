@@ -13,7 +13,8 @@ const {
   showConfig,
   setMcpServer,
   removeMcpServer,
-  listMcpServers
+  listMcpServers,
+  upsertCommand
 } = require("../cli/config")
 const { getInstalledPluginCommands, listInstalledPlugins } = require("../cli/plugins-store")
 
@@ -295,6 +296,46 @@ describe("config", () => {
       
       const removed = await removeMcpServer("z")
       expect(removed).toBe(true)
+    })
+  })
+
+  describe("command management", () => {
+    test("upsertCommand adds and updates local command aliases", async () => {
+      fs.existsSync.mockReturnValue(true)
+      fs.readFileSync.mockReturnValue(JSON.stringify({
+        commands: [
+          { namespace: "a", resource: "b", action: "c", adapter: "http" }
+        ]
+      }))
+
+      await upsertCommand({
+        namespace: "ai",
+        resource: "browser",
+        action: "probe",
+        adapter: "mcp",
+        adapterConfig: { server: "browser-use", tool: "navigate" }
+      })
+
+      let lastWrite = JSON.parse(fs.writeFileSync.mock.calls[0][1])
+      expect(lastWrite.commands).toEqual(expect.arrayContaining([
+        expect.objectContaining({ namespace: "a", resource: "b", action: "c" }),
+        expect.objectContaining({ namespace: "ai", resource: "browser", action: "probe", adapter: "mcp" })
+      ]))
+
+      fs.readFileSync.mockReturnValue(JSON.stringify(lastWrite))
+      fs.writeFileSync.mockClear()
+
+      await upsertCommand({
+        namespace: "ai",
+        resource: "browser",
+        action: "probe",
+        adapter: "mcp",
+        description: "updated"
+      })
+
+      lastWrite = JSON.parse(fs.writeFileSync.mock.calls[0][1])
+      const updated = lastWrite.commands.find(c => c.namespace === "ai" && c.resource === "browser" && c.action === "probe")
+      expect(updated.description).toBe("updated")
     })
   })
 

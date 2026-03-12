@@ -173,6 +173,22 @@ async function listMcpServers() {
   return Array.isArray(cfg.mcp_servers) ? cfg.mcp_servers : []
 }
 
+async function upsertCommand(commandDef) {
+  const cfg = readCache() || emptyConfig()
+  const commands = Array.isArray(cfg.commands) ? cfg.commands.slice() : []
+  const idx = commands.findIndex(c =>
+    c &&
+    c.namespace === commandDef.namespace &&
+    c.resource === commandDef.resource &&
+    c.action === commandDef.action,
+  )
+  if (idx >= 0) commands[idx] = commandDef
+  else commands.push(commandDef)
+  cfg.commands = commands
+  writeCache(cfg)
+  return commandDef
+ }
+
 async function showConfig() {
   const cache = readCache()
   if (!cache) {
@@ -190,4 +206,4 @@ async function showConfig() {
   }
 }
 
-module.exports = { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listMcpServers }
+module.exports = { loadConfig, syncConfig, showConfig, setMcpServer, removeMcpServer, listMcpServers, upsertCommand }
