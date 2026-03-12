@@ -10,10 +10,12 @@ const {
 } = require("../cli/plugins-manager")
 const { listRegistryPlugins } = require("../cli/plugins-registry")
 const { loadConfig } = require("../cli/config")
+const { getPluginLearn } = require("../cli/plugins-learn")
 
 jest.mock("../cli/plugins-manager")
 jest.mock("../cli/plugins-registry")
 jest.mock("../cli/config")
+jest.mock("../cli/plugins-learn")
 
 describe("plugins-command", () => {
   let mockOutput
@@ -108,8 +110,9 @@ describe("plugins-command", () => {
   })
 
   test("explore subcommand", async () => {
-    const mockReg = [{ name: "p1", tags: ["t1"] }]
+    const mockReg = [{ name: "p1", tags: ["t1"], has_learn: true }]
     listRegistryPlugins.mockReturnValue(mockReg)
+    listInstalledPlugins.mockReturnValue([{ name: "p1" }])
 
     await handlePluginsCommand({
       positional: ["plugins", "explore"],
@@ -125,6 +128,64 @@ describe("plugins-command", () => {
     expect(mockOutput).toHaveBeenCalledWith(expect.objectContaining({
       plugins: expect.any(Array)
     }))
+    expect(mockOutput.mock.calls[0][0].plugins[0].has_learn).toBe(true)
+    expect(mockOutput.mock.calls[0][0].plugins[0].installed).toBe(true)
+  })
+
+  test("explore supports has-learn/source/installed/limit filters", async () => {
+    listInstalledPlugins.mockReturnValue([{ name: "p2" }])
+    listRegistryPlugins.mockReturnValue([
+      { name: "p1", tags: ["x"], has_learn: true, source: { type: "bundled" } },
+      { name: "p2", tags: ["x"], has_learn: true, source: { type: "bundled" } },
+      { name: "p3", tags: ["x"], has_learn: false, source: { type: "git" } },
+    ])
+
+    await handlePluginsCommand({
+      positional: ["plugins", "explore"],
+      flags: { "has-learn": "true", source: "bundled", installed: "false", limit: "1" },
+      humanMode: false,
+      output: mockOutput,
+      outputError: mockOutputError,
+    })
+
+    const out = mockOutput.mock.calls[0][0]
+    expect(out.total).toBe(1)
+    expect(out.returned).toBe(1)
+    expect(out.plugins[0].name).toBe("p1")
+    expect(out.filters).toEqual(expect.objectContaining({
+      has_learn: true,
+      source: "bundled",
+      installed: false,
+      limit: 1,
+    }))
+    expect(mockOutputError).not.toHaveBeenCalled()
+  })
+
+  test("explore rejects invalid has-learn", async () => {
+    await handlePluginsCommand({
+      positional: ["plugins", "explore"],
+      flags: { "has-learn": "maybe" },
+      outputError: mockOutputError,
+    })
+    expect(mockOutputError).toHaveBeenCalledWith(expect.objectContaining({ code: 85 }))
+  })
+
+  test("explore rejects invalid source", async () => {
+    await handlePluginsCommand({
+      positional: ["plugins", "explore"],
+      flags: { source: "svn" },
+      outputError: mockOutputError,
+    })
+    expect(mockOutputError).toHaveBeenCalledWith(expect.objectContaining({ code: 85 }))
+  })
+
+  test("explore rejects invalid limit", async () => {
+    await handlePluginsCommand({
+      positional: ["plugins", "explore"],
+      flags: { limit: "0" },
+      outputError: mockOutputError,
+    })
+    expect(mockOutputError).toHaveBeenCalledWith(expect.objectContaining({ code: 85 }))
   })
 
   test("explore subcommand in human mode", async () => {
@@ -206,6 +267,36 @@ describe("plugins-command", () => {
       output: mockOutput
     })
     expect(doctorAllPlugins).toHaveBeenCalled()
+  })
+
+  test("learn subcommand success json", async () => {
+    getPluginLearn.mockReturnValue({ plugin: "browser-use", installed: false, source: "registry-bundled", learn_markdown: "# Learn" })
+    await handlePluginsCommand({
+      positional: ["plugins", "learn", "browser-use"],
+      humanMode: false,
+      output: mockOutput,
+    })
+    expect(getPluginLearn).toHaveBeenCalledWith("browser-use")
+    expect(mockOutput).toHaveBeenCalledWith(expect.objectContaining({ plugin: "browser-use" }))
+  })
+
+  test("learn subcommand success human", async () => {
+    getPluginLearn.mockReturnValue({ plugin: "browser-use", installed: false, source: "registry-bundled", learn_markdown: "# Learn" })
+    await handlePluginsCommand({
+      positional: ["plugins", "learn", "browser-use"],
+      humanMode: true,
+      output: mockOutput,
+    })
+    expect(consoleSpy).toHaveBeenCalledWith("# Learn")
+    expect(mockOutput).not.toHaveBeenCalled()
+  })
+
+  test("learn subcommand validation error", async () => {
+    await handlePluginsCommand({
+      positional: ["plugins", "learn"],
+      outputError: mockOutputError,
+    })
+    expect(mockOutputError).toHaveBeenCalledWith(expect.objectContaining({ code: 85 }))
   })
 
   test("unknown subcommand", async () => {

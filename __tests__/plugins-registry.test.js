@@ -44,7 +44,7 @@ describe("plugins-registry", () => {
   describe("listRegistryPlugins", () => {
     const mockRegistry = {
       plugins: [
-        { name: "p1", description: "desc1", tags: ["t1", "t2"], source: { type: "git" } },
+        { name: "p1", description: "desc1", tags: ["t1", "t2"], source: { type: "git" }, has_learn: true },
         { name: "p2", description: "other", tags: ["t2"] }
       ]
     }
@@ -58,6 +58,8 @@ describe("plugins-registry", () => {
       const list = listRegistryPlugins()
       expect(list).toHaveLength(2)
       expect(list[0]).toMatchObject({ name: "p1", tags: ["t1", "t2"] })
+      expect(list[0].has_learn).toBe(true)
+      expect(list[1].has_learn).toBe(false)
       expect(list[1].source).toEqual({}) // normalized
     })
 

@@ -340,6 +340,7 @@
       "name": "browser-use",
       "description": "Hybrid Browser Use plugin: auto MCP setup, dynamic tool bindings, and local usage skills",
       "tags": ["browser-use", "mcp", "browser", "automation", "agents", "skills"],
+      "has_learn": true,
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/browser-use/plugin.json"
@@ -370,6 +371,16 @@
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/openfang/plugin.json"
+      }
+    },
+    {
+      "name": "resend",
+      "description": "Resend CLI plugin for official email sending and environment diagnostics",
+      "tags": ["resend", "email", "api", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/resend/plugin.json"
       }
     }
   ]

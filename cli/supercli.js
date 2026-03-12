@@ -210,7 +210,7 @@ function renderTopLevelHelp(config) {
     console.log("\n  Usage: supercli <namespace> <resource> <action> [--args]");
     if (hasServer) console.log("  Sync: supercli sync");
     console.log(
-      "  Plugins: supercli plugins explore | supercli plugins install <name|path> | supercli plugins install --git <repo>",
+      "  Plugins: supercli plugins explore | supercli plugins learn <name> | supercli plugins install <name|path> | supercli plugins install --git <repo>",
     );
     console.log(
       "  MCP: supercli mcp list | supercli mcp add <name> --url <url> | supercli mcp tools --mcp-server <name> | supercli mcp call --mcp-server <name> --tool <tool> | supercli mcp bind --mcp-server <name> --tool <tool> --as <ns.res.act> | supercli mcp doctor --mcp-server <name> | supercli mcp remove <name>",

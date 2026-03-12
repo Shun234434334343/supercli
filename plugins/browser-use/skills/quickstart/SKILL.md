@@ -17,6 +17,7 @@ export BROWSER_USE_API_KEY=<your_key>
 ## 2) Install plugin
 
 ```bash
+supercli plugins learn browser-use
 supercli plugins install browser-use --json
 ```
 

@@ -5,6 +5,7 @@ describe("help-json", () => {
     const data = buildCapabilities({ commands: [] }, false)
 
     expect(data.commands.plugins).toBeDefined()
+    expect(data.commands.plugins.subcommands).toEqual(expect.arrayContaining(["learn"]))
     expect(data.commands.mcp.subcommands).toEqual(expect.arrayContaining(["tools", "call", "bind", "doctor"]))
     expect(data.commands.sync).toBeUndefined()
     expect(data.flags["--help-json"]).toBeDefined()

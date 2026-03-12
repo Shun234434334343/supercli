@@ -6,6 +6,9 @@
   "checks": [
     { "type": "binary", "name": "npx" }
   ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
   "post_install": {
     "script": "scripts/post-install.js",
     "runtime": "node",

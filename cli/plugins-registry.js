@@ -35,7 +35,8 @@ function normalizePlugin(entry) {
     name: entry.name,
     description: entry.description || "",
     tags: Array.isArray(entry.tags) ? entry.tags.map(t => String(t)) : [],
-    source: entry.source && typeof entry.source === "object" ? entry.source : {}
+    source: entry.source && typeof entry.source === "object" ? entry.source : {},
+    has_learn: entry.has_learn === true
   }
 }
 

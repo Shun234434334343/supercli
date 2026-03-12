@@ -9,10 +9,25 @@ const {
 } = require("./plugins-manager")
 const { listRegistryPlugins } = require("./plugins-registry")
 const { loadConfig } = require("./config")
+const { getPluginLearn } = require("./plugins-learn")
 
 async function handlePluginsCommand(options) {
   const { positional, flags, humanMode, output, outputHumanTable, outputError } = options
   const subcommand = positional[1]
+
+  function parseBooleanFlag(name, value) {
+    if (value === undefined) return null
+    const raw = String(value).trim().toLowerCase()
+    if (raw === "true") return true
+    if (raw === "false") return false
+    outputError({
+      code: 85,
+      type: "invalid_argument",
+      message: `Invalid --${name}. Use true or false`,
+      recoverable: false
+    })
+    return null
+  }
 
   if (subcommand === "list") {
     const plugins = listInstalledPlugins().map(p => ({
@@ -70,18 +85,65 @@ async function handlePluginsCommand(options) {
       .map(t => t.trim())
       .filter(Boolean)
     const name = flags.name ? String(flags.name).trim() : ""
-    const plugins = listRegistryPlugins({ name, tags }).map(p => ({
+    const hasLearnFilter = parseBooleanFlag("has-learn", flags["has-learn"])
+    if (flags["has-learn"] !== undefined && hasLearnFilter === null) return true
+
+    const installedFilter = parseBooleanFlag("installed", flags.installed)
+    if (flags.installed !== undefined && installedFilter === null) return true
+
+    const sourceFilter = flags.source ? String(flags.source).trim().toLowerCase() : null
+    if (sourceFilter && !["bundled", "git"].includes(sourceFilter)) {
+      outputError({
+        code: 85,
+        type: "invalid_argument",
+        message: "Invalid --source. Use bundled or git",
+        recoverable: false
+      })
+      return true
+    }
+
+    const limit = flags.limit === undefined ? null : Number(flags.limit)
+    if (flags.limit !== undefined && (!Number.isFinite(limit) || limit <= 0 || !Number.isInteger(limit))) {
+      outputError({
+        code: 85,
+        type: "invalid_argument",
+        message: "Invalid --limit. Use a positive integer",
+        recoverable: false
+      })
+      return true
+    }
+
+    const installedSet = new Set(listInstalledPlugins().map(p => p.name))
+
+    let plugins = listRegistryPlugins({ name, tags }).map(p => ({
       name: p.name,
       description: p.description,
       tags: p.tags,
+      has_learn: p.has_learn === true,
+      installed: installedSet.has(p.name),
       source_type: (p.source && p.source.type) || "bundled",
       source_repo: p.source && p.source.repo ? p.source.repo : ""
     }))
+
+    if (hasLearnFilter !== null) {
+      plugins = plugins.filter(p => p.has_learn === hasLearnFilter)
+    }
+    if (installedFilter !== null) {
+      plugins = plugins.filter(p => p.installed === installedFilter)
+    }
+    if (sourceFilter) {
+      plugins = plugins.filter(p => p.source_type === sourceFilter)
+    }
+
+    const total = plugins.length
+    if (limit !== null) plugins = plugins.slice(0, limit)
 
     if (humanMode) {
       console.log("\n  ⚡ Plugin Registry\n")
       outputHumanTable(plugins, [
         { key: "name", label: "Name" },
+        { key: "installed", label: "Installed" },
+        { key: "has_learn", label: "Learn" },
         { key: "source_type", label: "Source" },
         { key: "tags", label: "Tags" },
         { key: "description", label: "Description" }
@@ -90,9 +152,15 @@ async function handlePluginsCommand(options) {
     } else {
       output({
         plugins,
+        total,
+        returned: plugins.length,
         filters: {
           name: name || null,
-          tags
+          tags,
+          has_learn: hasLearnFilter,
+          installed: installedFilter,
+          source: sourceFilter,
+          limit: limit === null ? null : limit
         }
       })
     }
@@ -131,7 +199,22 @@ async function handlePluginsCommand(options) {
     return true
   }
 
-  outputError({ code: 85, type: "invalid_argument", message: "Unknown plugins subcommand. Use: list, explore, install, remove, show, doctor", recoverable: false })
+  if (subcommand === "learn") {
+    const name = positional[2]
+    if (!name) {
+      outputError({ code: 85, type: "invalid_argument", message: "Usage: dcli plugins learn <name>", recoverable: false })
+      return true
+    }
+    const info = getPluginLearn(name)
+    if (humanMode) {
+      console.log(info.learn_markdown)
+    } else {
+      output(info)
+    }
+    return true
+  }
+
+  outputError({ code: 85, type: "invalid_argument", message: "Unknown plugins subcommand. Use: list, explore, install, remove, show, doctor, learn", recoverable: false })
   return true
 }
 
