@@ -464,11 +464,14 @@ function installPlugin(ref, options = {}) {
     const existingKeysForSamePlugin = new Set((existing && existing.commands ? existing.commands : []).map(commandKey))
     const conflicts = []
     const installedCommands = []
+    const pluginDir = path.dirname(loaded.manifestPath)
 
     for (const cmd of manifest.commands) {
       const key = commandKey(cmd)
       const owner = ownerByKey[key]
       if ((!existingByKey[key] && !owner) || existingKeysForSamePlugin.has(key)) {
+        cmd.plugin_name = manifest.name
+        cmd.plugin_dir = pluginDir
         installedCommands.push(cmd)
         continue
       }
