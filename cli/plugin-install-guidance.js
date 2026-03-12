@@ -420,7 +420,20 @@ const PLUGIN_INSTALL_GUIDANCE = {
       "supercli skills get visual-explainer:visual-explainer.skill"
     ],
     note: "Install indexes normalized markdown skills from https://github.com/javimosch/visual-explainer (plugins/visual-explainer-normalized)."
+  },
+  resend: {
+    plugin: "resend",
+    binary: "resend",
+    check: "resend doctor --json",
+    install_steps: [
+      "supercli plugins install resend",
+      "supercli resend cli setup",
+      "supercli resend login",
+      "supercli resend cli doctor --json"
+    ],
+    note: "This hybrid plugin indexes the upstream resend-cli README into the skills catalog and provides a wrapped interface for sending emails and checking environment health. It manages its own resend-cli dependency globally."
   }
+
 }
 
 function getPluginInstallGuidance(name) {

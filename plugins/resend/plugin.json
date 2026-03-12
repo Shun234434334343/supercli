@@ -1,0 +1,94 @@
+{
+  "name": "resend",
+  "version": "0.1.0",
+  "description": "Resend CLI plugin: official tool for Resend emails, AI-friendly and non-interactive",
+  "source": "https://github.com/resend/resend-cli",
+  "checks": [
+    { "type": "binary", "name": "node" },
+    { "type": "binary", "name": "npm" }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "post_install": {
+    "script": "scripts/post-install.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "post_uninstall": {
+    "script": "scripts/post-uninstall.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "commands": [
+    {
+      "namespace": "resend",
+      "resource": "cli",
+      "action": "setup",
+      "description": "Install resend-cli dependency globally",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/setup-resend.js"],
+        "parseJson": false,
+        "timeout_ms": 120000
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "cli",
+      "action": "doctor",
+      "description": "Run environment diagnostics for Resend",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["doctor"],
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    },
+    {
+      "namespace": "resend",
+      "resource": "emails",
+      "action": "send",
+      "description": "Send an email via the Resend API",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "baseArgs": ["emails", "send"],
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": [
+        { "name": "from", "type": "string", "required": true, "description": "Sender email address" },
+        { "name": "to", "type": "string", "required": true, "description": "Recipient email addresses (space-separated)" },
+        { "name": "subject", "type": "string", "required": true, "description": "Email subject line" },
+        { "name": "text", "type": "string", "required": false, "description": "Plain text body" },
+        { "name": "html", "type": "string", "required": false, "description": "HTML body string" },
+        { "name": "html-file", "type": "string", "required": false, "description": "Path to HTML file for body" },
+        { "name": "cc", "type": "string", "required": false, "description": "CC recipients" },
+        { "name": "bcc", "type": "string", "required": false, "description": "BCC recipients" },
+        { "name": "reply-to", "type": "string", "required": false, "description": "Reply-to email address" },
+        { "name": "api-key", "type": "string", "required": false, "description": "Override API key" }
+      ]
+    },
+    {
+      "namespace": "resend",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command for any other Resend CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "resend",
+        "passthrough": true,
+        "jsonFlag": "--json",
+        "parseJson": true,
+        "missingDependencyHelp": "Please run 'dcli resend cli setup' to install the Resend CLI."
+      },
+      "args": []
+    }
+  ]
+}
