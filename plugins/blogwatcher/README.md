@@ -1,6 +1,6 @@
 # BlogWatcher Plugin
 
-This plugin is a hybrid harness: it indexes BlogWatcher's upstream `SKILL.md` and `README.md` into the local skills catalog and exposes the local `blogwatcher` binary through wrapped commands plus full passthrough.
+This plugin is a hybrid harness: it indexes BlogWatcher's upstream `SKILL.md` and `README.md` into the local skill-doc catalog and exposes the local `blogwatcher` binary through wrapped commands plus full passthrough.
 
 ## What It Adds
 
@@ -14,7 +14,7 @@ This plugin is a hybrid harness: it indexes BlogWatcher's upstream `SKILL.md` an
 supercli plugins install blogwatcher --json
 ```
 
-## Explore Indexed Skills
+## Explore Indexed Skill Documents
 
 ```bash
 supercli skills list --catalog --provider blogwatcher --json
@@ -49,4 +49,4 @@ supercli blogwatcher scan "Example Blog"
 - Wrapped commands return raw text in the dcli envelope because upstream does not expose JSON output.
 - The wrapped `blogs remove` and `articles read-all` commands force `--yes` to avoid interactive prompts.
 - BlogWatcher stores its SQLite data under `~/.blogwatcher`, so use an isolated `HOME` if you want disposable smoke testing.
-- Removing the plugin also removes its registered skills provider from the local catalog.
+- Removing the plugin also removes its registered skill-doc provider from the local catalog.

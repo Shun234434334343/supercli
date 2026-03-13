@@ -1,6 +1,6 @@
 # nullclaw Plugin
 
-This plugin is a hybrid harness: it indexes NullClaw's upstream docs into the dcli skills catalog and exposes the local `nullclaw` binary through wrapped commands plus full passthrough.
+This plugin is a hybrid harness: it indexes NullClaw's upstream docs into the dcli skill-doc catalog and exposes the local `nullclaw` binary through wrapped commands plus full passthrough.
 
 ## What It Adds
 
@@ -14,7 +14,7 @@ This plugin is a hybrid harness: it indexes NullClaw's upstream docs into the dc
 supercli plugins install nullclaw --json
 ```
 
-## Explore Indexed Skills
+## Explore Indexed Skill Documents
 
 ```bash
 supercli skills list --catalog --provider nullclaw --json
@@ -42,4 +42,4 @@ supercli nullclaw agent -m "hello"
 - This plugin indexes remote markdown from `https://github.com/nullclaw/nullclaw`.
 - It does not install the upstream `nullclaw` binary for you.
 - If you also want the runtime locally, follow the upstream install path such as `brew install nullclaw`.
-- Removing the plugin also removes its registered skills provider from the local catalog.
+- Removing the plugin also removes its registered skill-doc provider from the local catalog.

@@ -4,13 +4,13 @@ Hybrid plugin for the [Monty](https://github.com/pydantic/monty) sandboxed Pytho
 
 ## Overview
 
-Monty is a minimal, secure Python interpreter written in Rust, designed for AI agents to run untrusted code safely. This plugin provides a Node.js wrapper for the `@pydantic/monty` package and indexes the upstream agent documentation into the SuperCLI skills catalog.
+Monty is a minimal, secure Python interpreter written in Rust, designed for AI agents to run untrusted code safely. This plugin provides a Node.js wrapper for the `@pydantic/monty` package and indexes the upstream agent documentation into the SuperCLI skill-doc catalog.
 
 ## Features
 
 - **Sandboxed Execution**: Runs Python code without access to the host filesystem, network, or environment.
 - **Dependency Management**: Controlled setup of the `@pydantic/monty` binary.
-- **Skills Indexing**: Teaches agents about Monty's capabilities by indexing remote `README.md` and `CLAUDE.md`.
+- **Skill Document Indexing**: Teaches agents about Monty's capabilities by indexing remote `README.md` and `CLAUDE.md`.
 - **Hybrid Support**: Combines local CLI wrappers with remote documentation.
 
 ## Installation
