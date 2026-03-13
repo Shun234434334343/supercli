@@ -29,6 +29,15 @@
       }
     },
     {
+      "name": "squirrelscan",
+      "description": "SquirrelScan plugin running in a locally built Docker image for fast repeatable website audits",
+      "tags": ["squirrelscan", "seo", "audit", "docker", "containers"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/squirrelscan/plugin.json"
+      }
+    },
+    {
       "name": "stripe",
       "description": "Stripe CLI plugin with core commands and passthrough",
       "tags": ["stripe", "payments", "billing", "passthrough"],
@@ -421,6 +430,16 @@
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/cass/plugin.json"
+      }
+    },
+    {
+      "name": "lightpanda",
+      "description": "Lightpanda plugin with agent-friendly scripted browser automation via puppeteer-core",
+      "tags": ["lightpanda", "browser", "automation", "puppeteer-core", "agents"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/lightpanda/plugin.json"
       }
     },
     {
