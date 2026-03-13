@@ -1,0 +1,260 @@
+<%- include("partials/head", { title: "Server Plugins" }) %>
+
+<div id="plugins-app" class="max-w-6xl">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Server Plugins</h1>
+    <div class="text-sm opacity-80">These plugins sync to clients during <code>supercli sync</code>.</div>
+  </div>
+
+  <div v-if="message.text" :class="['alert mb-4', message.type === 'error' ? 'alert-error' : 'alert-success']">
+    <span>{{ message.text }}</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <div class="card bg-base-100 border border-base-300">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base">Settings</h2>
+        <label class="form-control mb-2">
+          <span class="label-text text-xs">Max ZIP Size (MB)</span>
+          <input v-model.number="settings.max_zip_mb" type="number" min="1" class="input input-bordered input-sm" />
+        </label>
+        <label class="form-control mb-3">
+          <span class="label-text text-xs">Default Hooks Policy</span>
+          <select v-model="settings.default_hooks_policy" class="select select-bordered select-sm">
+            <option value="deny">deny</option>
+            <option value="allow">allow</option>
+          </select>
+        </label>
+        <button class="btn btn-sm btn-primary" @click="saveSettings">Save Settings</button>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 border border-base-300 lg:col-span-2">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base">Create JSON Plugin</h2>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <input v-model="jsonForm.name" class="input input-bordered input-sm" placeholder="name" />
+          <input v-model="jsonForm.version" class="input input-bordered input-sm" placeholder="version" />
+        </div>
+        <input v-model="jsonForm.description" class="input input-bordered input-sm mb-2" placeholder="description" />
+        <textarea v-model="jsonForm.manifestStr" rows="7" class="textarea textarea-bordered textarea-sm font-mono mb-2" placeholder='{"name":"my-plugin","commands":[]}'></textarea>
+        <div class="flex gap-2 items-center">
+          <label class="label cursor-pointer p-0">
+            <span class="label-text text-xs mr-2">Enabled</span>
+            <input type="checkbox" v-model="jsonForm.enabled" class="checkbox checkbox-xs" />
+          </label>
+          <select v-model="jsonForm.hooks_policy" class="select select-bordered select-xs">
+            <option value="inherit">hooks: inherit</option>
+            <option value="allow">hooks: allow</option>
+            <option value="deny">hooks: deny</option>
+          </select>
+          <button class="btn btn-sm btn-primary ml-auto" @click="createJsonPlugin">Save JSON Plugin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 border border-base-300 mb-6">
+    <div class="card-body p-4">
+      <h2 class="card-title text-base">Upload ZIP Plugin</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+        <input v-model="zipForm.name" class="input input-bordered input-sm" placeholder="name" />
+        <input v-model="zipForm.version" class="input input-bordered input-sm" placeholder="version" />
+      </div>
+      <input v-model="zipForm.description" class="input input-bordered input-sm mb-2" placeholder="description" />
+      <input type="file" @change="onZipChange" accept=".zip" class="file-input file-input-bordered file-input-sm w-full mb-2" />
+      <textarea v-model="zipForm.manifestStr" rows="5" class="textarea textarea-bordered textarea-sm font-mono mb-2" placeholder='Manifest JSON (must include commands array)'></textarea>
+      <div class="flex gap-2 items-center">
+        <label class="label cursor-pointer p-0">
+          <span class="label-text text-xs mr-2">Enabled</span>
+          <input type="checkbox" v-model="zipForm.enabled" class="checkbox checkbox-xs" />
+        </label>
+        <select v-model="zipForm.hooks_policy" class="select select-bordered select-xs">
+          <option value="inherit">hooks: inherit</option>
+          <option value="allow">hooks: allow</option>
+          <option value="deny">hooks: deny</option>
+        </select>
+        <button class="btn btn-sm btn-primary ml-auto" @click="uploadZipPlugin">Upload ZIP Plugin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-box">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Enabled</th>
+          <th>Version</th>
+          <th>Checksum</th>
+          <th>Hooks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="plugins.length === 0"><td colspan="7" class="opacity-70">No server plugins yet.</td></tr>
+        <tr v-for="plugin in plugins" :key="plugin.name">
+          <td><span class="font-semibold">{{ plugin.name }}</span></td>
+          <td><span class="badge badge-outline">{{ plugin.source_type }}</span></td>
+          <td>
+            <input type="checkbox" class="toggle toggle-xs" :checked="plugin.enabled" @change="togglePlugin(plugin, $event.target.checked)" />
+          </td>
+          <td>{{ plugin.version }}</td>
+          <td><code class="text-xs">{{ shortChecksum(plugin.checksum) }}</code></td>
+          <td>
+            <select class="select select-bordered select-xs" :value="plugin.hooks_policy || 'inherit'" @change="updateHooksPolicy(plugin, $event.target.value)">
+              <option value="inherit">inherit</option>
+              <option value="allow">allow</option>
+              <option value="deny">deny</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-xs btn-error btn-outline" @click="removePlugin(plugin)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const initialPlugins = <%- JSON.stringify(plugins || []) %>
+  const initialSettings = <%- JSON.stringify(settings || { max_zip_mb: 10, default_hooks_policy: 'deny' }) %>
+
+  Vue.createApp({
+    data() {
+      return {
+        plugins: initialPlugins,
+        settings: { ...initialSettings },
+        message: { type: '', text: '' },
+        jsonForm: {
+          name: '',
+          version: '0.0.0',
+          description: '',
+          enabled: true,
+          hooks_policy: 'inherit',
+          manifestStr: '{\n  "name": "my-plugin",\n  "version": "0.0.0",\n  "commands": []\n}',
+        },
+        zipForm: {
+          name: '',
+          version: '0.0.0',
+          description: '',
+          enabled: true,
+          hooks_policy: 'inherit',
+          archive_base64: '',
+          manifestStr: '{\n  "name": "my-plugin",\n  "version": "0.0.0",\n  "commands": []\n}',
+        },
+      }
+    },
+    methods: {
+      setMessage(type, text) {
+        this.message = { type, text }
+      },
+      shortChecksum(value) {
+        if (!value) return '-'
+        return value.slice(0, 10) + '...'
+      },
+      async api(url, method, body) {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: body ? JSON.stringify(body) : undefined,
+        })
+        let parsed = null
+        try { parsed = await res.json() } catch { parsed = null }
+        if (!res.ok) throw new Error((parsed && parsed.error) || `${res.status} ${res.statusText}`)
+        return parsed
+      },
+      async reloadPlugins() {
+        const out = await this.api('/api/plugins?format=json', 'GET')
+        this.plugins = out.plugins || []
+        if (out.settings) this.settings = out.settings
+      },
+      async saveSettings() {
+        try {
+          await this.api('/api/plugins/settings', 'PUT', this.settings)
+          this.setMessage('success', 'Settings updated')
+          await this.reloadPlugins()
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+      async createJsonPlugin() {
+        try {
+          const manifest = JSON.parse(this.jsonForm.manifestStr)
+          await this.api('/api/plugins', 'POST', {
+            source_type: 'json',
+            name: this.jsonForm.name,
+            version: this.jsonForm.version,
+            description: this.jsonForm.description,
+            enabled: this.jsonForm.enabled,
+            hooks_policy: this.jsonForm.hooks_policy,
+            manifest,
+          })
+          this.setMessage('success', `Saved JSON plugin '${this.jsonForm.name}'`)
+          await this.reloadPlugins()
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+      async onZipChange(event) {
+        const file = event.target.files && event.target.files[0]
+        if (!file) return
+        const buffer = await file.arrayBuffer()
+        const bytes = new Uint8Array(buffer)
+        let binary = ''
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+        this.zipForm.archive_base64 = btoa(binary)
+      },
+      async uploadZipPlugin() {
+        try {
+          if (!this.zipForm.archive_base64) throw new Error('Choose a ZIP file first')
+          const manifest = JSON.parse(this.zipForm.manifestStr)
+          await this.api('/api/plugins/upload', 'POST', {
+            source_type: 'zip',
+            name: this.zipForm.name,
+            version: this.zipForm.version,
+            description: this.zipForm.description,
+            enabled: this.zipForm.enabled,
+            hooks_policy: this.zipForm.hooks_policy,
+            manifest,
+            archive_base64: this.zipForm.archive_base64,
+          })
+          this.setMessage('success', `Uploaded ZIP plugin '${this.zipForm.name}'`)
+          await this.reloadPlugins()
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+      async togglePlugin(plugin, enabled) {
+        try {
+          await this.api(`/api/plugins/${encodeURIComponent(plugin.name)}`, 'PATCH', { enabled })
+          plugin.enabled = enabled
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+      async updateHooksPolicy(plugin, hooksPolicy) {
+        try {
+          await this.api(`/api/plugins/${encodeURIComponent(plugin.name)}`, 'PATCH', { hooks_policy: hooksPolicy })
+          plugin.hooks_policy = hooksPolicy
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+      async removePlugin(plugin) {
+        if (!confirm(`Delete server plugin '${plugin.name}'?`)) return
+        try {
+          await this.api(`/api/plugins/${encodeURIComponent(plugin.name)}`, 'DELETE')
+          this.setMessage('success', `Deleted '${plugin.name}'`)
+          await this.reloadPlugins()
+        } catch (err) {
+          this.setMessage('error', err.message)
+        }
+      },
+    },
+  }).mount('#plugins-app')
+</script>
+
+<%- include("partials/foot") %>

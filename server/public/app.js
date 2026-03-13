@@ -14,5 +14,8 @@
   } else if (path.startsWith("/api/jobs") || path.startsWith("/jobs")) {
     const el = document.getElementById("nav-jobs");
     if (el) el.classList.add("nav-active");
+  } else if (path.startsWith("/api/plugins") || path.startsWith("/plugins")) {
+    const el = document.getElementById("nav-plugins");
+    if (el) el.classList.add("nav-active");
   }
 })();
