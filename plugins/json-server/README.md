@@ -44,6 +44,15 @@ supercli json-server fixtures/db.json --json --no-interactive --no-color
 ## Important Caveats
 
 - Prefer wrapper args as flags (`--file`, `--state-dir`) for deterministic invocation.
-- `server start` runs detached in the background and returns immediately; validate with `server status` before running API-dependent tasks.
+- `server start` runs detached and returns immediately; use a short readiness retry loop before API calls.
 - Default state directory is `./.json-server`; isolate environments with `--state-dir` to avoid PID/log collisions.
 - Always run `server stop` after automation flows so stale state does not block future starts.
+
+Example readiness check:
+
+```bash
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  curl -sS http://localhost:43111/posts >/dev/null && break
+  sleep 0.2
+done
+```
