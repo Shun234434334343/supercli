@@ -2,3 +2,4 @@ node_modules
 supercli_storage
 .env
 coverage
+.beads

@@ -1,10 +1,10 @@
 # Supported Harnesses
 
-A comprehensive guide to all currently supported harnesses in dcli, including bundled harnesses, built-in adapters, and popular community harnesses available via the plugin system.
+A comprehensive guide to all currently supported harnesses in supercli, including bundled harnesses, built-in adapters, and popular community harnesses available via the plugin system.
 
 ## Bundled Harnesses
 
-These harnesses are included with dcli and require only the underlying CLI tool to be installed.
+These harnesses are included with supercli and require only the underlying CLI tool to be installed.
 
 ### beads (Task/Issue Management)
 
@@ -289,7 +289,7 @@ For detailed instructions, see [plugin-harness-guide.md](plugin-harness-guide.md
 
 ## Request a Harness
 
-Missing a CLI you'd like to use with dcli? [Open an issue](https://github.com/anomalyco/dcli/issues) with:
+Missing a CLI you'd like to use with supercli? [Open an issue](https://github.com/anomalyco/supercli/issues) with:
 - CLI name and link
 - Use cases in your workflow
 - Relevant commands/operations
