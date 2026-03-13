@@ -17,7 +17,7 @@ const {
   upsertCommand,
   removeCommandsByNamespace
 } = require("../cli/config")
-const { getInstalledPluginCommands, listInstalledPlugins } = require("../cli/plugins-store")
+const { getEffectivePluginCommands, listInstalledPlugins, readServerPluginsLock } = require("../cli/plugins-store")
 
 global.fetch = jest.fn()
 
@@ -29,8 +29,9 @@ describe("config", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     os.homedir.mockReturnValue(mockHomedir)
-    getInstalledPluginCommands.mockReturnValue([])
+    getEffectivePluginCommands.mockReturnValue([])
     listInstalledPlugins.mockReturnValue([])
+    readServerPluginsLock.mockReturnValue({ installed: {} })
     jest.spyOn(Date, "now").mockReturnValue(1000000)
   })
 
@@ -52,7 +53,7 @@ describe("config", () => {
         version: "2",
         commands: [{ id: "base" }]
       }))
-      getInstalledPluginCommands.mockReturnValue([{ id: "plugin" }])
+      getEffectivePluginCommands.mockReturnValue([{ id: "plugin" }])
 
       const config = await loadConfig()
       expect(config.version).toBe("2")
