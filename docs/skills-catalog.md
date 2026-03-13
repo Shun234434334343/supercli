@@ -1,4 +1,4 @@
-# Skills Catalog
+# Skill Documents Catalog
 
 SuperCLI can discover SKILL.md files from multiple local providers and expose them with stable `provider:id` identifiers.
 
@@ -21,7 +21,7 @@ supercli skills sync --json
 
 This scans enabled provider roots for `SKILL.md` files and rebuilds the local index.
 
-## Query Catalog Skills
+## Query Catalog Skill Documents
 
 ```bash
 supercli skills list --catalog --json
@@ -29,13 +29,13 @@ supercli skills search --query "planning" --json
 supercli skills get opencode:plan-changes
 ```
 
-## Built-in MCP Usage Skill (Agent-Friendly)
+## Built-in MCP Usage Skill Document (Agent-Friendly)
 
 ```bash
 supercli skills get mcp.servers.usage
 ```
 
-This built-in skill teaches non-human agents how to register, verify, and use MCP servers
+This built-in skill document teaches non-human agents how to register, verify, and use MCP servers
 through SuperCLI, including a browser-use style `mcp-remote` SSE bridge pattern with
 runtime API-key passing.
 
@@ -53,9 +53,9 @@ supercli skills list --catalog --provider agency-agents --json
 supercli skills get agency-agents:engineering.engineering-frontend-developer
 ```
 
-`agency-agents` maps skills one-to-one to upstream `.md` files in
+`agency-agents` maps skill documents one-to-one to upstream `.md` files in
 `msitarzewski/agency-agents`. If upstream paths change or files are removed,
-individual skills may stop resolving until reinstalled/refreshed.
+individual skill documents may stop resolving until reinstalled/refreshed.
 
 ## Remote Provider Example: visual-explainer
 
@@ -65,7 +65,7 @@ supercli skills list --catalog --provider visual-explainer --json
 supercli skills get visual-explainer:visual-explainer.skill
 ```
 
-`visual-explainer` maps skills to normalized markdown files under
+`visual-explainer` maps skill documents to normalized markdown files under
 `plugins/visual-explainer-normalized` in `javimosch/visual-explainer`.
 
 ## Remote Provider Example: nullclaw
@@ -121,7 +121,7 @@ supercli skills get clix:root.readme
 so agents can learn safe cookie-auth X workflows, JSON usage, and agent-mode guidance.
 It also exposes curated read-only wrappers for the local `clix` binary.
 
-## Local Repo Skill Example: cline-non-interactive
+## Local Repo Skill Document Example: cline-non-interactive
 
 ```bash
 supercli skills sync --json
@@ -129,5 +129,5 @@ supercli skills list --catalog --provider repo --json
 supercli skills get repo:cline-non-interactive
 ```
 
-`cline-non-interactive` is a repository-local skill that teaches agents to prefer the wrapped
+`cline-non-interactive` is a repository-local skill document that teaches agents to prefer the wrapped
 `supercli cline task run` and `supercli cline task plan` commands for unattended Cline usage.

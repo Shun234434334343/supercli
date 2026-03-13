@@ -8,7 +8,7 @@ A **plugin harness** bridges dcli to an external CLI tool. It allows dcli to:
 - Discover and route commands to the external CLI
 - Expose the CLI's functionality through dcli's unified interface
 - Provide consistent output formatting and error handling
-- Integrate AI-driven skill discovery across all harnesses
+- Integrate AI-driven capability discovery across all harnesses
 
 ## Anatomy of a Plugin Harness
 
