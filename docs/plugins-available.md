@@ -258,6 +258,7 @@ These harnesses are in active development and will be available as plugins. Stat
 
 | Harness | CLI | Status | Purpose |
 |---------|-----|--------|---------|
+| **cocoindex-code** | cocoindex-code | Available via plugin | Semantic code search via local MCP with bound `cocoindex.code.search` capability |
 | **huggingface** | huggingface-cli | Planned | Hugging Face model management |
 | **langchain** | langchain CLI | Planned | LangChain utilities |
 | **ollama** | ollama | Planned | Local LLM management |

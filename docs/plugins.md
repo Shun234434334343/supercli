@@ -1,6 +1,6 @@
 # Plugins
 
-supercli supports plugin discovery through the registry file at `plugins/plugins.json`.
+supercli supports plugin discovery through `plugins/plugins.json` plus auto-discovery of bundled manifests at `plugins/*/plugin.json`.
 
 Plugin owners can submit PRs that add or update metadata in this registry:
 
@@ -8,6 +8,7 @@ Plugin owners can submit PRs that add or update metadata in this registry:
 - `description`
 - `tags`
 - `source` (`bundled` path or remote `git` repo + manifest path)
+- `install_guidance` (optional plugin-specific dependency/setup hints)
 
 ## Plugin Commands
 
@@ -39,14 +40,16 @@ Default is `fail`.
 ## Notes
 
 - `plugins list` shows installed plugins.
-- `plugins explore` shows discoverable plugins from `plugins/plugins.json`.
+- `plugins explore` shows discoverable plugins from merged sources: curated registry entries plus bundled manifest auto-discovery.
 - `plugins explore` supports filters: `--name`, `--tags`, `--has-learn true|false`, `--installed true|false`, `--source bundled|git`, `--limit <n>`.
 - `plugins explore --json` includes `has_learn`, `installed`, and `filters` metadata so agents can prioritize plugins with learning content.
 - `plugins learn <name>` prints plugin-provided learning content before or after install.
 - `plugins install` supports local path, registry name, and direct remote git manifest installs.
 - Plugin manifests can define `learn` content via `learn.text` or `learn.file` (path inside plugin folder).
 - Plugin manifests can define `post_install` hooks (`script`, optional `runtime`, optional `timeout_ms`) that execute from the plugin folder after install.
+- Plugin manifests can define `install_guidance` so plugin-specific setup guidance does not require core edits in `cli/plugin-install-guidance.js`.
 - `agency-agents` is a bundled zero-command plugin. Installing it adds a remote skill-document provider named `agency-agents` and refreshes the local skill-doc catalog.
 - `visual-explainer` is a bundled zero-command plugin. Installing it adds a remote skill-document provider named `visual-explainer` sourced from normalized markdown skill documents in `javimosch/visual-explainer` and refreshes the local skill-doc catalog.
 - `browser-use` is a bundled hybrid plugin. Installing it auto-registers a `browser-use` MCP server, discovers and binds Browser Use MCP tools into direct `browseruse.tool.*` commands, and installs local Browser Use skill documents from the plugin folder.
+- `cocoindex-code` is a bundled hybrid plugin. Installing it auto-registers a local `cocoindex-code` MCP server, binds `cocoindex.code.search`, and installs local quickstart skill documents.
 - `squirrelscan` is a bundled Docker-backed plugin with broad CLI coverage (`audit`, `crawl`, `analyze`, `report`, `auth`, `config`, `init`, `feedback`, `self`, `skills`) plus passthrough. It lazily builds a pinned local image on first use, then reuses it for fast repeat scans (example: `supercli squirrel audit https://example.com -C quick`).

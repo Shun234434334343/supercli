@@ -376,6 +376,16 @@
       }
     },
     {
+      "name": "cocoindex-code",
+      "description": "Hybrid cocoindex-code plugin: auto local MCP registration, semantic search capability binding, and quickstart docs",
+      "tags": ["cocoindex", "mcp", "semantic-search", "code", "agents"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/cocoindex-code/plugin.json"
+      }
+    },
+    {
       "name": "superpowers",
       "description": "Agentic skills framework for software development methodology from obra/superpowers",
       "tags": ["skills", "agents", "development", "methodology", "catalog"],
