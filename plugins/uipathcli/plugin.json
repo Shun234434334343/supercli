@@ -1,0 +1,120 @@
+{
+  "name": "uipathcli",
+  "version": "0.1.0",
+  "description": "UiPath CLI plugin with CI/CD lifecycle wrappers and passthrough",
+  "source": "https://docs.uipath.com/cicd-integrations/standalone/2025.10/user-guide/about-uipath-cli",
+  "checks": [
+    { "type": "binary", "name": "uipcli" }
+  ],
+  "install_guidance": {
+    "plugin": "uipathcli",
+    "binary": "uipcli",
+    "check": "uipcli --version",
+    "install_steps": [
+      "Download and extract UiPath CLI package for your OS",
+      "Ensure uipcli is on PATH, or set UIPCLI_DLL and install dotnet runtime",
+      "supercli plugins install uipathcli"
+    ],
+    "note": "On Linux/macOS, UiPath CLI commonly runs as 'dotnet uipcli.dll'. Set UIPCLI_DLL when no uipcli launcher is available."
+  },
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "uipath",
+      "resource": "self",
+      "action": "version",
+      "description": "Show UiPath CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-uipath-cli.js", "--version"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install UiPath CLI and ensure uipcli is available."
+      },
+      "args": []
+    },
+    {
+      "namespace": "uipath",
+      "resource": "project",
+      "action": "pack",
+      "description": "Pack a UiPath project into a package",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-uipath-cli.js", "package", "pack"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install UiPath CLI and ensure uipcli is available."
+      },
+      "args": [
+        { "name": "project-path", "type": "string", "required": false },
+        { "name": "output", "type": "string", "required": false },
+        { "name": "version", "type": "string", "required": false },
+        { "name": "orchestrator-url", "type": "string", "required": false },
+        { "name": "organization-unit", "type": "string", "required": false },
+        { "name": "username", "type": "string", "required": false },
+        { "name": "password", "type": "string", "required": false },
+        { "name": "tenant", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "uipath",
+      "resource": "project",
+      "action": "analyze",
+      "description": "Run static analysis for a UiPath project",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-uipath-cli.js", "package", "analyze"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install UiPath CLI and ensure uipcli is available."
+      },
+      "args": [
+        { "name": "project-path", "type": "string", "required": false },
+        { "name": "stop-on-rule-violation", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "uipath",
+      "resource": "project",
+      "action": "deploy",
+      "description": "Deploy a UiPath package to Orchestrator",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-uipath-cli.js", "package", "deploy"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install UiPath CLI and ensure uipcli is available."
+      },
+      "args": [
+        { "name": "orchestrator-url", "type": "string", "required": false },
+        { "name": "organization-unit", "type": "string", "required": false },
+        { "name": "tenant", "type": "string", "required": false },
+        { "name": "username", "type": "string", "required": false },
+        { "name": "password", "type": "string", "required": false },
+        { "name": "entry-points-path", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "uipath",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any UiPath CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-uipath-cli.js"],
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install UiPath CLI and ensure uipcli is available."
+      },
+      "args": []
+    }
+  ]
+}
