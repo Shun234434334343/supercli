@@ -1,0 +1,119 @@
+{
+  "name": "clever",
+  "version": "0.1.0",
+  "description": "Clever Tools CLI plugin with agent-friendly JSON wrappers for Clever Cloud",
+  "source": "https://www.clever.cloud/developers/doc/cli/",
+  "checks": [
+    { "type": "binary", "name": "node" },
+    { "type": "binary", "name": "npm" }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "clever",
+      "resource": "cli",
+      "action": "setup",
+      "description": "Install Clever Tools globally",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/setup-clever.js"],
+        "parseJson": false,
+        "timeout_ms": 120000
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "cli",
+      "action": "doctor",
+      "description": "Run Clever environment diagnostics",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "baseArgs": ["diag", "--format", "json"],
+        "parseJson": true,
+        "timeout_ms": 30000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "auth",
+      "action": "whoami",
+      "description": "Show the active Clever Cloud profile",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "baseArgs": ["profile", "--format", "json"],
+        "parseJson": true,
+        "timeout_ms": 30000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "apps",
+      "action": "list",
+      "description": "List Clever Cloud applications",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "baseArgs": ["applications", "--format", "json"],
+        "parseJson": true,
+        "timeout_ms": 30000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "addons",
+      "action": "list",
+      "description": "List Clever Cloud add-ons",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "baseArgs": ["addons", "--format", "json"],
+        "parseJson": true,
+        "timeout_ms": 30000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "tokens",
+      "action": "list",
+      "description": "List Clever API bridge tokens",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "baseArgs": ["tokens", "--format", "json"],
+        "parseJson": true,
+        "timeout_ms": 30000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clever",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command for any Clever Tools CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clever",
+        "passthrough": true,
+        "parseJson": true,
+        "timeout_ms": 60000,
+        "missingDependencyHelp": "Please run 'dcli clever cli setup' to install Clever Tools."
+      },
+      "args": []
+    }
+  ]
+}
