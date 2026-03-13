@@ -1,6 +1,6 @@
 FROM node:24-bookworm-slim
 
-ARG BOXLITE_NPM_VERSION=1.1.0
+ARG BOXLITE_NPM_VERSION=latest
 
 RUN npm install -g "@javimosch/boxlite@${BOXLITE_NPM_VERSION}" && npm cache clean --force
 

@@ -1,6 +1,6 @@
 # BoxLite Plugin
 
-This plugin exposes `boxcli` (from `@javimosch/boxlite`) through supercli.
+This plugin exposes `boxcli` (from `@javimosch/boxlite`) through a Docker runner in supercli.
 
 ## Install
 
@@ -10,12 +10,10 @@ supercli plugins install ./plugins/boxlite
 
 ## Requirements
 
-- `boxcli` binary must be available on `PATH`
-- install with npm:
+- `docker`
+- `node`
 
-```bash
-npm i -g @javimosch/boxlite
-```
+On first command run, the plugin builds `dcli-boxlite:1.1.0` and reuses it afterward.
 
 ## Commands
 
@@ -34,5 +32,5 @@ supercli boxlite box remove my-box --if-exists --json
 For advanced flows (for example `exec run` with `--` separator), use passthrough:
 
 ```bash
-supercli boxlite _ _ exec run my-box -- sh -lc "echo ok"
+supercli boxlite exec run my-box -- sh -lc "echo ok"
 ```
