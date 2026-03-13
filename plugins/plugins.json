@@ -347,6 +347,16 @@
       }
     },
     {
+      "name": "json-server",
+      "description": "@javimosch/json-server plugin with background lifecycle wrappers and passthrough",
+      "tags": ["json-server", "mock-api", "rest", "agent-friendly", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/json-server/plugin.json"
+      }
+    },
+    {
       "name": "browser-use",
       "description": "Hybrid Browser Use plugin: auto MCP setup, dynamic tool bindings, and local usage skills",
       "tags": ["browser-use", "mcp", "browser", "automation", "agents", "skills"],
@@ -411,6 +421,15 @@
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/cass/plugin.json"
+      }
+    },
+    {
+      "name": "boxlite",
+      "description": "BoxLite plugin using boxcli from @javimosch/boxlite",
+      "tags": ["boxlite", "sandbox", "vm", "containers", "automation"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/boxlite/plugin.json"
       }
     }
   ]

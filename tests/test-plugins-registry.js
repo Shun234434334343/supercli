@@ -228,6 +228,11 @@ assert(agentBrowserExplore.ok, "agent-browser explore should succeed")
 const agentBrowserExploreData = JSON.parse(agentBrowserExplore.output)
 assert(agentBrowserExploreData.plugins.some(p => p.name === "agent-browser"), "explore filters should find agent-browser")
 
+const jsonServerExplore = runNoServer("plugins explore --name json-server --tags mock-api,agent-friendly --has-learn true --json")
+assert(jsonServerExplore.ok, "json-server explore should succeed")
+const jsonServerExploreData = JSON.parse(jsonServerExplore.output)
+assert(jsonServerExploreData.plugins.some(p => p.name === "json-server"), "explore filters should find json-server")
+
 const repoPath = makeRemotePluginRepo()
 const install = runNoServer(`plugins install --git ${repoPath} --manifest-path plugins/supercli/plugin.json --ref main --json`)
 assert(install.ok, "remote git install should succeed")
