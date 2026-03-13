@@ -1,0 +1,86 @@
+{
+  "name": "uipath",
+  "version": "0.1.0",
+  "description": "UiPath CLI plugin with CI/CD-oriented wrappers and passthrough",
+  "source": "https://docs.uipath.com/cicd-integrations/standalone/2025.10",
+  "tags": ["uipath", "rpa", "cicd", "automation", "enterprise"],
+  "checks": [
+    {
+      "type": "binary",
+      "name": "uipcli"
+    }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "uipath",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show UiPath CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "uipcli",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install UiPath CLI (uipcli) to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "uipath",
+      "resource": "package",
+      "action": "deploy",
+      "description": "Deploy a UiPath package path using non-interactive credentials",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "uipcli",
+        "baseArgs": ["package", "deploy"],
+        "positionalArgs": ["path"],
+        "optionalArgs": {
+          "application-id": "--applicationId",
+          "application-secret": "--applicationSecret",
+          "account-for-app": "--accountForApp",
+          "application-scope": "--applicationScope",
+          "organization": "--organization",
+          "tenant": "--tenant",
+          "uri": "--uri"
+        },
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Please install UiPath CLI (uipcli) to use this command."
+      },
+      "args": [
+        {
+          "name": "path",
+          "type": "string",
+          "required": true,
+          "description": "Path to project or package artifact"
+        },
+        { "name": "application-id", "type": "string", "required": false },
+        { "name": "application-secret", "type": "string", "required": false },
+        { "name": "account-for-app", "type": "string", "required": false },
+        { "name": "application-scope", "type": "string", "required": false },
+        { "name": "organization", "type": "string", "required": false },
+        { "name": "tenant", "type": "string", "required": false },
+        { "name": "uri", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "uipath",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any UiPath CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "uipcli",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Please install UiPath CLI (uipcli) to use this command."
+      },
+      "args": []
+    }
+  ]
+}
