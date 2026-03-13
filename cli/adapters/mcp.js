@@ -53,6 +53,8 @@ function mergeMcpConfig(cmdConfig, serverEntry) {
     server: cmdConfig.server,
     url: interpolateEnvPlaceholders(cmdConfig.url || (serverEntry && serverEntry.url)),
     command: cmdConfig.command || (serverEntry && serverEntry.command),
+    mcp_protocol: cmdConfig.mcp_protocol || (serverEntry && serverEntry.mcp_protocol),
+    mcp_wire: cmdConfig.mcp_wire || (serverEntry && serverEntry.mcp_wire),
     timeout_ms:
       cmdConfig.timeout_ms !== undefined
         ? cmdConfig.timeout_ms
