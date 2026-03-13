@@ -1,0 +1,198 @@
+{
+  "name": "boxlite",
+  "version": "0.1.0",
+  "description": "BoxLite agent-first CLI plugin using boxcli",
+  "source": "https://github.com/javimosch/boxlite",
+  "checks": [
+    {
+      "type": "binary",
+      "name": "boxcli"
+    }
+  ],
+  "commands": [
+    {
+      "namespace": "boxlite",
+      "resource": "capabilities",
+      "action": "show",
+      "description": "Show boxcli capabilities",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "capabilities"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": []
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "runtime",
+      "action": "info",
+      "description": "Show runtime info",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "runtime", "info"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "home", "type": "string", "required": false },
+        { "name": "registry", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "image",
+      "action": "list",
+      "description": "List cached images",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "image", "list"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": []
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "image",
+      "action": "pull",
+      "description": "Pull image into local cache",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "image", "pull"],
+        "positionalArgs": ["image"],
+        "parseJson": true,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "image", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "image",
+      "action": "exists",
+      "description": "Check if image exists in local cache",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "image", "exists"],
+        "positionalArgs": ["image"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "image", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "box",
+      "action": "list",
+      "description": "List boxes",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "box", "list"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": []
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "box",
+      "action": "get",
+      "description": "Get one box by id or name",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "box", "get"],
+        "positionalArgs": ["target"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "target", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "box",
+      "action": "create",
+      "description": "Create a new box with image preflight",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "box", "create"],
+        "optionalArgs": {
+          "image": "--image",
+          "name": "--name",
+          "cpus": "--cpus",
+          "memory-mib": "--memory-mib",
+          "allow-image-pull": "--allow-image-pull"
+        },
+        "parseJson": true,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "image", "type": "string", "required": true },
+        { "name": "name", "type": "string", "required": false },
+        { "name": "cpus", "type": "integer", "required": false },
+        { "name": "memory-mib", "type": "integer", "required": false },
+        { "name": "allow-image-pull", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "box",
+      "action": "remove",
+      "description": "Remove a box",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "baseArgs": ["--output", "json", "box", "remove"],
+        "positionalArgs": ["target"],
+        "optionalArgs": {
+          "force": "--force",
+          "if-exists": "--if-exists"
+        },
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": [
+        { "name": "target", "type": "string", "required": true },
+        { "name": "force", "type": "boolean", "required": false },
+        { "name": "if-exists", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "boxlite",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough to boxcli for advanced commands",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "boxcli",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Install @javimosch/boxlite and ensure boxcli is on PATH"
+      },
+      "args": []
+    }
+  ]
+}
