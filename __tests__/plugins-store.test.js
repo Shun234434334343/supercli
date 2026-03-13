@@ -7,17 +7,21 @@ jest.mock("os", () => ({
 }))
 
 const {
+  SUPERCLI_PLUGINS_DIR,
+  SUPERCLI_LOCAL_LOCK_FILE,
+  LEGACY_PLUGINS_FILE,
   readPluginsLock,
   writePluginsLock,
   listInstalledPlugins,
-  getInstalledPluginCommands
+  getInstalledPluginCommands,
+  getEffectivePluginCommands,
 } = require("../cli/plugins-store")
 const path = require("path")
 
 describe("plugins-store", () => {
   const mockHomedir = "/home/user"
-  const dcliDir = path.join(mockHomedir, ".dcli")
-  const pluginsFile = path.join(dcliDir, "plugins.lock.json")
+  const pluginsDir = path.join(mockHomedir, ".supercli", "plugins")
+  const pluginsFile = path.join(pluginsDir, "plugins.lock.json")
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -32,11 +36,25 @@ describe("plugins-store", () => {
     })
 
     test("returns parsed lock if file exists", () => {
-      fs.existsSync.mockReturnValue(true)
+      fs.existsSync.mockImplementation((target) => target === pluginsFile)
       const mockLock = { version: 1, installed: { p1: { name: "p1" } } }
       fs.readFileSync.mockReturnValue(JSON.stringify(mockLock))
       const lock = readPluginsLock()
       expect(lock).toEqual(mockLock)
+    })
+
+    test("migrates legacy lock when new lock missing", () => {
+      fs.existsSync.mockImplementation((target) => target === LEGACY_PLUGINS_FILE)
+      const mockLock = { version: 1, installed: { p1: { name: "p1" } } }
+      fs.readFileSync.mockReturnValue(JSON.stringify(mockLock))
+
+      const lock = readPluginsLock()
+
+      expect(lock).toEqual(mockLock)
+      expect(fs.writeFileSync).toHaveBeenCalledWith(
+        SUPERCLI_LOCAL_LOCK_FILE,
+        expect.stringContaining('"version": 1'),
+      )
     })
 
     test("returns empty lock if file is invalid JSON", () => {
@@ -66,7 +84,7 @@ describe("plugins-store", () => {
       fs.existsSync.mockReturnValue(false)
       const lock = { version: 1, installed: {} }
       writePluginsLock(lock)
-      expect(fs.mkdirSync).toHaveBeenCalledWith(dcliDir, { recursive: true })
+      expect(fs.mkdirSync).toHaveBeenCalledWith(SUPERCLI_PLUGINS_DIR, { recursive: true })
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         pluginsFile,
         expect.stringContaining('"version": 1')
@@ -110,6 +128,23 @@ describe("plugins-store", () => {
       }))
       const commands = getInstalledPluginCommands()
       expect(commands).toEqual([])
+    })
+  })
+
+  describe("getEffectivePluginCommands", () => {
+    test("local plugins shadow server plugins by name", () => {
+      fs.existsSync.mockImplementation((target) =>
+        target === SUPERCLI_LOCAL_LOCK_FILE || target.endsWith("server.lock.json"),
+      )
+      fs.readFileSync.mockImplementation((target) => {
+        if (target.endsWith("plugins.lock.json")) {
+          return JSON.stringify({ installed: { alpha: { name: "alpha", commands: [{ id: "local" }] } } })
+        }
+        return JSON.stringify({ installed: { alpha: { name: "alpha", commands: [{ id: "server-shadowed" }] }, beta: { name: "beta", commands: [{ id: "server" }] } } })
+      })
+
+      const commands = getEffectivePluginCommands()
+      expect(commands).toEqual([{ id: "local" }, { id: "server" }])
     })
   })
 })
