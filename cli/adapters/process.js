@@ -116,6 +116,7 @@ async function execute(cmd, flags, context = {}) {
   const pluginEnv = {}
   if (cmd.plugin_dir) pluginEnv.SUPERCLI_PLUGIN_DIR = cmd.plugin_dir
   if (cmd.plugin_name) pluginEnv.SUPERCLI_PLUGIN_NAME = cmd.plugin_name
+  pluginEnv.SUPERCLI_INVOKE_CWD = process.cwd()
   const env = (cfg.env && typeof cfg.env === "object") ? { ...process.env, ...cfg.env, ...pluginEnv } : { ...process.env, ...pluginEnv }
   const streamMode = cfg.stream || null
   const onStreamEvent = typeof context.onStreamEvent === "function" ? context.onStreamEvent : null
