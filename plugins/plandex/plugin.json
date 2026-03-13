@@ -1,0 +1,130 @@
+{
+  "name": "plandex",
+  "version": "0.1.0",
+  "description": "Plandex CLI plugin with non-interactive planning wrappers and passthrough",
+  "source": "https://plandex.ai",
+  "tags": ["plandex", "ai", "planning", "automation", "passthrough"],
+  "checks": [
+    { "type": "binary", "name": "plandex" }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "plandex",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show installed Plandex CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": []
+    },
+    {
+      "namespace": "plandex",
+      "resource": "plan",
+      "action": "new",
+      "description": "Create a new plan with optional autonomy flags",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "baseArgs": ["new"],
+        "optionalArgs": {
+          "name": "-n",
+          "context-dir": "-d",
+          "no-auto": "--no-auto",
+          "basic": "--basic",
+          "plus": "--plus",
+          "semi": "--semi",
+          "full": "--full"
+        },
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": [
+        { "name": "name", "type": "string", "required": false, "description": "Optional plan name" },
+        { "name": "context-dir", "type": "string", "required": false, "description": "Optional context directory" },
+        { "name": "no-auto", "type": "boolean", "required": false, "description": "Set autonomy to none" },
+        { "name": "basic", "type": "boolean", "required": false, "description": "Set autonomy to basic" },
+        { "name": "plus", "type": "boolean", "required": false, "description": "Set autonomy to plus" },
+        { "name": "semi", "type": "boolean", "required": false, "description": "Set autonomy to semi" },
+        { "name": "full", "type": "boolean", "required": false, "description": "Set autonomy to full" }
+      ]
+    },
+    {
+      "namespace": "plandex",
+      "resource": "plan",
+      "action": "set-auto",
+      "description": "Set autonomy level for current plan",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "baseArgs": ["set-auto"],
+        "positionalArgs": ["level"],
+        "parseJson": false,
+        "timeout_ms": 60000,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": [
+        { "name": "level", "type": "string", "required": true, "description": "Autonomy level: none|basic|plus|semi|full" }
+      ]
+    },
+    {
+      "namespace": "plandex",
+      "resource": "task",
+      "action": "tell",
+      "description": "Run one-shot implementation instruction",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "baseArgs": ["tell"],
+        "positionalArgs": ["prompt"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": [
+        { "name": "prompt", "type": "string", "required": true, "description": "Instruction for Plandex" }
+      ]
+    },
+    {
+      "namespace": "plandex",
+      "resource": "task",
+      "action": "chat",
+      "description": "Run one-shot analysis question",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "baseArgs": ["chat"],
+        "positionalArgs": ["prompt"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": [
+        { "name": "prompt", "type": "string", "required": true, "description": "Question for Plandex" }
+      ]
+    },
+    {
+      "namespace": "plandex",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any Plandex CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "plandex",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Plandex CLI from the official docs and ensure 'plandex' is on PATH."
+      },
+      "args": []
+    }
+  ]
+}
