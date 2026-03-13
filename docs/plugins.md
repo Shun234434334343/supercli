@@ -1,6 +1,6 @@
 # Plugins
 
-DCLI supports plugin discovery through the registry file at `plugins/plugins.json`.
+supercli supports plugin discovery through the registry file at `plugins/plugins.json`.
 
 Plugin owners can submit PRs that add or update metadata in this registry:
 
@@ -12,26 +12,26 @@ Plugin owners can submit PRs that add or update metadata in this registry:
 ## Plugin Commands
 
 ```bash
-dcli plugins list
-dcli plugins explore
-dcli plugins explore --name commiat
-dcli plugins explore --tags git,ai
-dcli plugins explore --has-learn true --installed false --source bundled --limit 10 --json
-dcli plugins learn <plugin-name>
-dcli plugins install <plugin-name>
-dcli plugins install --git https://github.com/org/repo.git --manifest-path plugins/supercli/plugin.json --ref main
-dcli plugins show <plugin-name>
-dcli plugins doctor
-dcli plugins doctor <plugin-name>
-dcli plugins remove <plugin-name>
+supercli plugins list
+supercli plugins explore
+supercli plugins explore --name commiat
+supercli plugins explore --tags git,ai
+supercli plugins explore --has-learn true --installed false --source bundled --limit 10 --json
+supercli plugins learn <plugin-name>
+supercli plugins install <plugin-name>
+supercli plugins install --git https://github.com/org/repo.git --manifest-path plugins/supercli/plugin.json --ref main
+supercli plugins show <plugin-name>
+supercli plugins doctor
+supercli plugins doctor <plugin-name>
+supercli plugins remove <plugin-name>
 ```
 
 Install conflict policy:
 
 ```bash
-dcli plugins install <plugin-name> --on-conflict fail
-dcli plugins install <plugin-name> --on-conflict skip
-dcli plugins install <plugin-name> --on-conflict replace
+supercli plugins install <plugin-name> --on-conflict fail
+supercli plugins install <plugin-name> --on-conflict skip
+supercli plugins install <plugin-name> --on-conflict replace
 ```
 
 Default is `fail`.
