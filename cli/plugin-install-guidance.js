@@ -1,3 +1,8 @@
+const fs = require("fs")
+const path = require("path")
+const { readPluginsLock } = require("./plugins-store")
+const { getRegistryPlugin } = require("./plugins-registry")
+
 const PLUGIN_INSTALL_GUIDANCE = {
   beads: {
     plugin: "beads",
@@ -37,6 +42,17 @@ const PLUGIN_INSTALL_GUIDANCE = {
       "docker --version"
     ],
     note: "Install Docker Engine/Desktop using your OS package manager, then verify with docker --version."
+  },
+  squirrelscan: {
+    plugin: "squirrelscan",
+    binary: "docker",
+    check: "docker --version",
+    install_steps: [
+      "docker --version",
+      "supercli plugins install squirrelscan",
+      "supercli squirrel audit https://example.com -C quick"
+    ],
+    note: "This plugin builds a pinned squirrelscan Docker image locally on first run. The first execution is slower; subsequent runs reuse the built image and local cache volume."
   },
   stripe: {
     plugin: "stripe",
@@ -436,10 +452,87 @@ const PLUGIN_INSTALL_GUIDANCE = {
 
 }
 
+function normalizeInstallGuidance(guidance, pluginName) {
+  if (!guidance || typeof guidance !== "object" || Array.isArray(guidance)) return null
+
+  const installSteps = Array.isArray(guidance.install_steps)
+    ? guidance.install_steps.map(step => String(step)).filter(Boolean)
+    : []
+
+  const normalized = {
+    plugin: typeof guidance.plugin === "string" && guidance.plugin
+      ? guidance.plugin
+      : String(pluginName || ""),
+    binary: typeof guidance.binary === "string" ? guidance.binary : "",
+    check: typeof guidance.check === "string" ? guidance.check : "",
+    install_steps: installSteps,
+    note: typeof guidance.note === "string" ? guidance.note : "",
+  }
+
+  if (!normalized.plugin) return null
+  if (!normalized.binary && !normalized.check && normalized.install_steps.length === 0 && !normalized.note) {
+    return null
+  }
+
+  return normalized
+}
+
+function readManifestGuidance(manifestPath, pluginName) {
+  if (!manifestPath || !fs.existsSync(manifestPath)) return null
+  try {
+    const parsed = JSON.parse(fs.readFileSync(manifestPath, "utf-8"))
+    return normalizeInstallGuidance(parsed.install_guidance, pluginName || parsed.name)
+  } catch {
+    return null
+  }
+}
+
+function findInstalledPlugin(name) {
+  const lock = readPluginsLock()
+  const lower = String(name || "").toLowerCase().trim()
+  if (!lower) return null
+  return Object.values(lock.installed || {}).find(p => String(p && p.name || "").toLowerCase() === lower) || null
+}
+
+function resolveRegistryManifestPath(entry) {
+  if (!entry || !entry.source || typeof entry.source !== "object") return null
+  const manifestPath = entry.source.manifest_path
+  if (!manifestPath || typeof manifestPath !== "string") return null
+  if (path.isAbsolute(manifestPath)) return manifestPath
+  return path.resolve(__dirname, "..", manifestPath)
+}
+
 function getPluginInstallGuidance(name) {
-  return PLUGIN_INSTALL_GUIDANCE[name] || null
+  const lower = String(name || "").toLowerCase().trim()
+  if (!lower) return null
+
+  const installed = findInstalledPlugin(lower)
+  if (installed) {
+    const stored = normalizeInstallGuidance(installed.install_guidance, installed.name)
+    if (stored) return stored
+
+    const resolved = installed.resolved_from && installed.resolved_from.manifest_path
+      ? readManifestGuidance(installed.resolved_from.manifest_path, installed.name)
+      : null
+    if (resolved) return resolved
+  }
+
+  const registryEntry = getRegistryPlugin(lower)
+  if (registryEntry) {
+    const inline = normalizeInstallGuidance(registryEntry.install_guidance, registryEntry.name)
+    if (inline) return inline
+    const fromManifest = readManifestGuidance(resolveRegistryManifestPath(registryEntry), registryEntry.name)
+    if (fromManifest) return fromManifest
+  }
+
+  const bundledManifest = path.resolve(__dirname, "..", "plugins", lower, "plugin.json")
+  const bundled = readManifestGuidance(bundledManifest, lower)
+  if (bundled) return bundled
+
+  return PLUGIN_INSTALL_GUIDANCE[lower] || null
 }
 
 module.exports = {
-  getPluginInstallGuidance
+  getPluginInstallGuidance,
+  normalizeInstallGuidance,
 }

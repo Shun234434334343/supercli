@@ -1,0 +1,492 @@
+{
+  "name": "squirrelscan",
+  "version": "0.2.0",
+  "description": "SquirrelScan Docker plugin with structured CLI wrappers and passthrough",
+  "source": "https://docs.squirrelscan.com/cli",
+  "checks": [{ "type": "binary", "name": "node" }, { "type": "binary", "name": "docker" }],
+  "learn": { "file": "skills/quickstart/SKILL.md" },
+  "post_install": { "script": "scripts/post-install.js", "runtime": "node", "timeout_ms": 15000 },
+  "post_uninstall": { "script": "scripts/post-uninstall.js", "runtime": "node", "timeout_ms": 15000 },
+  "commands": [
+    {
+      "namespace": "squirrel",
+      "resource": "audit",
+      "action": "run",
+      "description": "Run website audit (crawl and analyze)",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "audit"],
+        "positionalArgs": ["url"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "url", "type": "string", "required": true },
+        { "name": "max-pages", "type": "integer", "required": false },
+        { "name": "coverage", "type": "string", "required": false },
+        { "name": "format", "type": "string", "required": false },
+        { "name": "output", "type": "string", "required": false },
+        { "name": "refresh", "type": "boolean", "required": false },
+        { "name": "resume", "type": "boolean", "required": false },
+        { "name": "verbose", "type": "boolean", "required": false },
+        { "name": "debug", "type": "boolean", "required": false },
+        { "name": "trace", "type": "boolean", "required": false },
+        { "name": "project-name", "type": "string", "required": false },
+        { "name": "publish", "type": "boolean", "required": false },
+        { "name": "visibility", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "crawl",
+      "action": "run",
+      "description": "Crawl website without analysis",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "crawl"],
+        "positionalArgs": ["url"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "url", "type": "string", "required": true },
+        { "name": "max-pages", "type": "integer", "required": false },
+        { "name": "refresh", "type": "boolean", "required": false },
+        { "name": "resume", "type": "boolean", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "analyze",
+      "action": "run",
+      "description": "Analyze latest or selected crawl",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "analyze"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "report",
+      "action": "show",
+      "description": "Show latest or selected report",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "report"],
+        "positionalArgs": ["id"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": false },
+        { "name": "format", "type": "string", "required": false },
+        { "name": "output", "type": "string", "required": false },
+        { "name": "input", "type": "string", "required": false },
+        { "name": "severity", "type": "string", "required": false },
+        { "name": "category", "type": "string", "required": false },
+        { "name": "diff", "type": "string", "required": false },
+        { "name": "regression-since", "type": "string", "required": false },
+        { "name": "allow-cross-site", "type": "boolean", "required": false },
+        { "name": "publish", "type": "boolean", "required": false },
+        { "name": "visibility", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "report",
+      "action": "list",
+      "description": "List recent reports",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "report", "--list"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "format", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "report",
+      "action": "publish",
+      "description": "Publish latest or selected report",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "report", "--publish"],
+        "positionalArgs": ["id"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "id", "type": "string", "required": false },
+        { "name": "visibility", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "auth",
+      "action": "login",
+      "description": "Authenticate for report publishing",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "auth", "login"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "device-name", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "auth",
+      "action": "logout",
+      "description": "Sign out and revoke token",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "auth", "logout"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "auth",
+      "action": "status",
+      "description": "Show authentication status",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "auth", "status"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "json", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "config",
+      "action": "show",
+      "description": "Show current configuration",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "config", "show"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "config",
+      "action": "set",
+      "description": "Set config key to value",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "config", "set"],
+        "positionalArgs": ["key", "value"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "key", "type": "string", "required": true },
+        { "name": "value", "type": "string", "required": true },
+        { "name": "dry-run", "type": "boolean", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "config",
+      "action": "path",
+      "description": "Print active config file path",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "config", "path"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "config",
+      "action": "validate",
+      "description": "Validate configuration file",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "config", "validate"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "init",
+      "action": "project",
+      "description": "Initialize squirrel.toml in current directory",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "init"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "force", "type": "boolean", "required": false },
+        { "name": "project-name", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "feedback",
+      "action": "send",
+      "description": "Send interactive feedback",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "feedback"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "install",
+      "description": "Install squirrel CLI files in container",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "install"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "bin-dir", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "update",
+      "description": "Check for or install updates",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "update"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "check", "type": "boolean", "required": false },
+        { "name": "dismiss", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "completion",
+      "description": "Generate shell completion script",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "completion"],
+        "positionalArgs": ["shell"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "shell", "type": "string", "required": true }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "doctor",
+      "description": "Run squirrel health checks",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "doctor"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "version",
+      "description": "Show squirrel version info",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "version"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "json", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "self",
+      "action": "uninstall",
+      "description": "Uninstall squirrel from container",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "uninstall"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "purge", "type": "boolean", "required": false },
+        { "name": "force", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "settings",
+      "action": "show",
+      "description": "Show squirrel self settings",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "settings", "show"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "user", "type": "boolean", "required": false },
+        { "name": "local", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "settings",
+      "action": "set",
+      "description": "Set squirrel self setting",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "self", "settings", "set"],
+        "positionalArgs": ["key", "value"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": [
+        { "name": "key", "type": "string", "required": true },
+        { "name": "value", "type": "string", "required": true },
+        { "name": "local", "type": "boolean", "required": false },
+        { "name": "user", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "skills",
+      "action": "install",
+      "description": "Install squirrelscan coding-agent skill",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "skills", "install"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "skills",
+      "action": "update",
+      "description": "Update squirrelscan coding-agent skill",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js", "skills", "update"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    },
+    {
+      "namespace": "squirrel",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough to any squirrel CLI command in Docker",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-squirrel.js"],
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install Docker and run: docker --version"
+      },
+      "args": []
+    }
+  ]
+}
