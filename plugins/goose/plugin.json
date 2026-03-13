@@ -1,0 +1,183 @@
+{
+  "name": "goose",
+  "version": "0.1.0",
+  "description": "Goose CLI plugin with headless automation wrappers and passthrough",
+  "source": "https://github.com/block/goose",
+  "checks": [
+    { "type": "binary", "name": "goose" }
+  ],
+  "install_guidance": {
+    "plugin": "goose",
+    "binary": "goose",
+    "check": "goose --version",
+    "install_steps": [
+      "curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash",
+      "goose --version",
+      "supercli plugins install goose"
+    ],
+    "note": "Use headless wrappers with --no-session defaults in CI or other non-interactive workflows."
+  },
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "goose",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show installed Goose CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "baseArgs": ["--version"],
+        "cwd": "invoke_cwd",
+        "parseJson": false,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": []
+    },
+    {
+      "namespace": "goose",
+      "resource": "task",
+      "action": "text",
+      "description": "Run a Goose headless task and return text output",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "baseArgs": ["run", "--no-session", "--quiet"],
+        "cwd": "invoke_cwd",
+        "optionalArgs": {
+          "text": "--text"
+        },
+        "errorMatchers": [
+          {
+            "match": "No provider configured",
+            "message": "Goose is installed but not configured with a provider yet. Escalate to a human to run `goose configure` and complete provider setup, then retry.",
+            "suggestions": [
+              "Ask a human to run `goose configure` and choose a provider/model.",
+              "Retry the same Goose command after provider setup completes."
+            ],
+            "recoverable": true
+          }
+        ],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": [
+        { "name": "text", "type": "string", "required": true, "description": "Instruction text to run headlessly" }
+      ]
+    },
+    {
+      "namespace": "goose",
+      "resource": "task",
+      "action": "json",
+      "description": "Run a Goose headless task and return structured JSON output",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "baseArgs": ["run", "--no-session", "--quiet", "--output-format", "json"],
+        "cwd": "invoke_cwd",
+        "optionalArgs": {
+          "text": "--text"
+        },
+        "errorMatchers": [
+          {
+            "match": "No provider configured",
+            "message": "Goose is installed but not configured with a provider yet. Escalate to a human to run `goose configure` and complete provider setup, then retry.",
+            "suggestions": [
+              "Ask a human to run `goose configure` and choose a provider/model.",
+              "Retry the same Goose command after provider setup completes."
+            ],
+            "recoverable": true
+          }
+        ],
+        "parseJson": true,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": [
+        { "name": "text", "type": "string", "required": true, "description": "Instruction text to run headlessly" }
+      ]
+    },
+    {
+      "namespace": "goose",
+      "resource": "task",
+      "action": "stream",
+      "description": "Run a Goose headless task with stream-json events",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "baseArgs": ["run", "--no-session", "--quiet", "--output-format", "stream-json"],
+        "cwd": "invoke_cwd",
+        "optionalArgs": {
+          "text": "--text"
+        },
+        "errorMatchers": [
+          {
+            "match": "No provider configured",
+            "message": "Goose is installed but not configured with a provider yet. Escalate to a human to run `goose configure` and complete provider setup, then retry.",
+            "suggestions": [
+              "Ask a human to run `goose configure` and choose a provider/model.",
+              "Retry the same Goose command after provider setup completes."
+            ],
+            "recoverable": true
+          }
+        ],
+        "stream": "jsonl",
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": [
+        { "name": "text", "type": "string", "required": true, "description": "Instruction text to run headlessly" }
+      ]
+    },
+    {
+      "namespace": "goose",
+      "resource": "task",
+      "action": "file",
+      "description": "Run a Goose headless task from an instructions file",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "baseArgs": ["run", "--no-session", "--quiet", "--instructions"],
+        "cwd": "invoke_cwd",
+        "positionalArgs": ["instructions"],
+        "errorMatchers": [
+          {
+            "match": "No provider configured",
+            "message": "Goose is installed but not configured with a provider yet. Escalate to a human to run `goose configure` and complete provider setup, then retry.",
+            "suggestions": [
+              "Ask a human to run `goose configure` and choose a provider/model.",
+              "Retry the same Goose command after provider setup completes."
+            ],
+            "recoverable": true
+          }
+        ],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": [
+        { "name": "instructions", "type": "string", "required": true, "description": "Instruction file path or - for stdin" }
+      ]
+    },
+    {
+      "namespace": "goose",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any Goose CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "goose",
+        "cwd": "invoke_cwd",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash"
+      },
+      "args": []
+    }
+  ]
+}
