@@ -10,7 +10,7 @@ function buildCapabilities(config, hasServer) {
     plan: { description: "Create execution plan", usage: "supercli plan <ns> <res> <act> [--args]" },
     execute: { description: "Execute a stored plan", usage: "supercli execute <plan_id>" },
     skills: {
-      description: "Skill discovery and SKILL.md generation",
+      description: "Capability docs and SKILL.md catalog workflows",
       subcommands: ["list", "get", "teach", "sync", "search", "providers"]
     }
   }
@@ -21,7 +21,7 @@ function buildCapabilities(config, hasServer) {
     version: "1.0",
     name: "supercli",
     description: "Config-driven, AI-friendly dynamic CLI",
-    what_is_supercli: "A deterministic command router that exposes namespace.resource.action commands, plugin-installed capabilities, and MCP tool bindings.",
+    what_is_supercli: "A deterministic capability router that exposes namespace.resource.action commands, plugin-installed capabilities, MCP tool bindings, and SKILL.md-based skill docs.",
     agent_onboarding: {
       discovery_sequence: [
         "supercli --json",

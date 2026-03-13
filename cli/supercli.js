@@ -220,7 +220,7 @@ function renderTopLevelHelp(config) {
       "  MCP: supercli mcp list | supercli mcp add <name> --url <url> | supercli mcp tools --mcp-server <name> | supercli mcp call --mcp-server <name> --tool <tool> | supercli mcp bind --mcp-server <name> --tool <tool> --as <ns.res.act> | supercli mcp doctor --mcp-server <name> | supercli mcp remove <name>",
     );
     console.log(
-      "  Skills: supercli skills list | supercli skills get <id> | supercli skills search --query <q> | supercli skills sync",
+      "  Skill Docs: supercli skills list | supercli skills get <id> | supercli skills search --query <q> | supercli skills sync",
     );
     if (config.features?.ask || process.env.OPENAI_BASE_URL) {
       console.log('  AI: supercli ask "<your natural language query>"');
@@ -310,8 +310,8 @@ async function main() {
           mode: "agent_bootstrap",
           name: "supercli",
           what_is_supercli:
-            "Deterministic command router for namespace.resource.action commands, plugin capabilities, MCP tool bindings, and skills.",
-          core_capabilities: ["commands", "plugins", "mcp", "skills"],
+            "Deterministic capability router for namespace.resource.action commands, plugin capabilities, MCP tool bindings, and SKILL.md skill documents.",
+          core_capabilities: ["commands", "plugins", "mcp", "skill_docs"],
           first_steps: [
             "supercli --help-json",
             "supercli discover --intent \"<task>\" --json",
