@@ -1,0 +1,87 @@
+{
+  "name": "azd",
+  "version": "0.1.0",
+  "description": "Azure Developer CLI plugin with non-interactive wrappers and passthrough",
+  "source": "https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/",
+  "tags": ["azure", "azd", "cloud", "devops", "automation"],
+  "checks": [
+    {
+      "type": "binary",
+      "name": "azd"
+    }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "azd",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show Azure Developer CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "azd",
+        "baseArgs": ["version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install Azure Developer CLI (azd) to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "azd",
+      "resource": "auth",
+      "action": "status",
+      "description": "Check Azure authentication status without interactive login",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "azd",
+        "baseArgs": ["auth", "login", "--check-status", "--no-prompt"],
+        "parseJson": false,
+        "timeout_ms": 20000,
+        "missingDependencyHelp": "Please install Azure Developer CLI (azd) to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "azd",
+      "resource": "deploy",
+      "action": "all",
+      "description": "Deploy all services in non-interactive mode",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "azd",
+        "baseArgs": ["deploy", "--all", "--no-prompt"],
+        "optionalArgs": {
+          "environment": "--environment"
+        },
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Please install Azure Developer CLI (azd) to use this command."
+      },
+      "args": [
+        {
+          "name": "environment",
+          "type": "string",
+          "required": false,
+          "description": "Optional azd environment name"
+        }
+      ]
+    },
+    {
+      "namespace": "azd",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any Azure Developer CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "azd",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 120000,
+        "missingDependencyHelp": "Please install Azure Developer CLI (azd) to use this command."
+      },
+      "args": []
+    }
+  ]
+}
