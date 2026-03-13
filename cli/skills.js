@@ -2,6 +2,7 @@ const { createPlan } = require("./planner")
 const { buildMcpServersUsageSkillMarkdown: buildMcpUsage } = require("./skills-mcp")
 
 const PLUGINS_USAGE_SKILL_ID = "plugins.registry.usage"
+const PLUGINS_AUTHORING_SKILL_ID = "plugins.authoring.usage"
 const MCP_SERVERS_USAGE_SKILL_ID = "mcp.servers.usage"
 const {
   listProviders,
@@ -223,6 +224,31 @@ function buildPluginsUsageSkillMarkdown(options = {}) {
   return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nUse this workflow for plugin discovery and installation:\n\n1. Explore registry metadata (name/description/tags):\n\n\`\`\`bash\nsupercli plugins explore --json\nsupercli plugins explore --name commiat --json\nsupercli plugins explore --tags git,ai --json\n\`\`\`\n\n2. Install by registry name:\n\n\`\`\`bash\nsupercli plugins install commiat --json\n\`\`\`\n\n3. Install directly from a remote git repository:\n\n\`\`\`bash\nsupercli plugins install --git https://github.com/org/repo.git --manifest-path plugins/supercli/plugin.json --ref main --json\n\`\`\`\n\n4. Validate installed plugin health and guidance:\n\n\`\`\`bash\nsupercli plugins doctor commiat --json\nsupercli plugins show commiat --json\n\`\`\`\n\n5. Use the namespace command exposed by the plugin.\n\n# Examples\n\n\`\`\`bash\nsupercli skills get ${PLUGINS_USAGE_SKILL_ID} --format skill.md\nsupercli skills get ${PLUGINS_USAGE_SKILL_ID} --format skill.md --show-dag\n\`\`\``
 }
 
+function buildPluginsAuthoringSkillMarkdown(options = {}) {
+  const frontmatter = {
+    skill_name: "plugins_authoring_usage",
+    description: "Explains how to design, implement, test, and register a new SuperCLI plugin.",
+    command: `skills get ${PLUGINS_AUTHORING_SKILL_ID}`,
+    arguments: [
+      { name: "format", type: "string", required: false, description: "Output format, default skill.md" },
+      { name: "show-dag", type: "boolean", required: false, description: "Include internal DAG for agent reasoning" }
+    ],
+    output_schema: { instruction: "string", examples: "array" },
+    metadata: { side_effects: false, risk_level: "safe", dag_supported: true }
+  }
+
+  if (options.showDag) {
+    frontmatter.dag = [
+      { id: 1, type: "inspect_existing_plugins" },
+      { id: 2, type: "design_plugin_shape", depends_on: [1] },
+      { id: 3, type: "author_manifest_docs_tests", depends_on: [2] },
+      { id: 4, type: "register_and_verify_plugin", depends_on: [3] }
+    ]
+  }
+
+  return `---\n${renderYamlObject(frontmatter)}\n---\n\n# Instruction\n\nUse this workflow when an agent needs to create a new SuperCLI plugin instead of installing an existing one.\n\n1. Inspect existing plugins and choose the closest reference pattern for command shape, output style, and test strategy.\n\n\`\`\`bash\nsupercli plugins explore --json\n\`\`\`\n\n2. Decide between wrapped commands, passthrough, or a hybrid plugin. Prefer wrapped commands for stable high-value flows and passthrough for broad upstream coverage.\n\n3. Pick the authoring location based on runtime context:\n- Package usage (most common, for example \`npx supercli\`): create the plugin under \`~/.supercli/plugins/local/<name>/\`.\n- SuperCLI source repo workflow: create the plugin under \`plugins/<name>/\`.\n\n4. Create at least:\n- \`plugin.json\`\n- \`README.md\`\n- \`skills/quickstart/SKILL.md\` when agents need focused usage guidance\n\n5. In \`plugin.json\`, define metadata, dependency checks, install guidance when setup is non-obvious, and commands using the right adapter.\n\n6. If working in the source repo, also register the plugin in \`plugins/plugins.json\` with description, tags, bundled manifest path, and \`has_learn\` when learn content exists.\n\n7. Add focused tests under \`__tests__/\` for command routing, install guidance, doctor checks, and learn content when applicable. Use fake binaries where possible.\n\n8. Run targeted verification:\n\n\`\`\`bash\nnpx jest __tests__/<plugin>-plugin.test.js --coverage=false --testTimeout=15000\nsupercli plugins install ~/.supercli/plugins/local/<name> --on-conflict replace --json\nsupercli plugins doctor <name> --json\n\`\`\`\n\n9. Keep terminology consistent:\n- Capability = executable command surface\n- Skill document = \`SKILL.md\` instruction artifact\n\n# Examples\n\n\`\`\`bash\nmkdir -p ~/.supercli/plugins/local/my-plugin/skills/quickstart\nsupercli plugins install ~/.supercli/plugins/local/my-plugin --on-conflict replace --json\nsupercli skills get ${PLUGINS_AUTHORING_SKILL_ID} --format skill.md\nsupercli skills get ${PLUGINS_AUTHORING_SKILL_ID} --format skill.md --show-dag\n\`\`\``
+}
+
 function buildMcpServersUsageSkillMarkdown(options = {}) {
   return buildMcpUsage({
     showDag: !!options.showDag,
@@ -239,6 +265,10 @@ function listSkillsMetadata(config) {
   commandSkills.push({
     name: PLUGINS_USAGE_SKILL_ID,
     description: "Discover and install plugins from the registry or remote git repos"
+  })
+  commandSkills.push({
+    name: PLUGINS_AUTHORING_SKILL_ID,
+    description: "Design, implement, test, and register a new SuperCLI plugin"
   })
   commandSkills.push({
     name: MCP_SERVERS_USAGE_SKILL_ID,
@@ -400,6 +430,11 @@ function handleSkillsCommand(options) {
       return true
     }
 
+    if (parsed.id === PLUGINS_AUTHORING_SKILL_ID) {
+      console.log(buildPluginsAuthoringSkillMarkdown({ showDag: !!flags["show-dag"] }))
+      return true
+    }
+
     if (parsed.id === MCP_SERVERS_USAGE_SKILL_ID) {
       console.log(buildMcpServersUsageSkillMarkdown({ showDag: !!flags["show-dag"] }))
       return true
@@ -423,11 +458,13 @@ function handleSkillsCommand(options) {
 
 module.exports = {
   PLUGINS_USAGE_SKILL_ID,
+  PLUGINS_AUTHORING_SKILL_ID,
   MCP_SERVERS_USAGE_SKILL_ID,
   normalizeSkillId,
   buildCommandSkillMarkdown,
   buildTeachSkillMarkdown,
   buildPluginsUsageSkillMarkdown,
+  buildPluginsAuthoringSkillMarkdown,
   buildMcpServersUsageSkillMarkdown,
   listSkillsMetadata,
   handleSkillsCommand,

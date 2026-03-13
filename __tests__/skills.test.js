@@ -1,9 +1,11 @@
 const {
   MCP_SERVERS_USAGE_SKILL_ID,
+  PLUGINS_AUTHORING_SKILL_ID,
   normalizeSkillId,
   buildCommandSkillMarkdown,
   buildTeachSkillMarkdown,
   buildPluginsUsageSkillMarkdown,
+  buildPluginsAuthoringSkillMarkdown,
   buildMcpServersUsageSkillMarkdown,
   listSkillsMetadata,
   handleSkillsCommand,
@@ -99,6 +101,14 @@ describe("skills", () => {
     expect(md).toContain("# Instruction")
   })
 
+  test("buildPluginsAuthoringSkillMarkdown returns markdown", () => {
+    const md = buildPluginsAuthoringSkillMarkdown({ showDag: true })
+    expect(md).toContain("skill_name: \"plugins_authoring_usage\"")
+    expect(md).toContain("plugins/<name>/")
+    expect(md).toContain("~/.supercli/plugins/local/<name>/")
+    expect(md).toContain("dag:")
+  })
+
   test("buildMcpServersUsageSkillMarkdown returns markdown", () => {
     const md = buildMcpServersUsageSkillMarkdown({ showDag: true })
     expect(md).toContain("skill_name: \"mcp_servers_usage\"")
@@ -120,6 +130,8 @@ describe("skills", () => {
     expect(item.description).toBe("desc")
     const mcpSkill = skills.find(s => s.name === MCP_SERVERS_USAGE_SKILL_ID)
     expect(mcpSkill).toBeTruthy()
+    const authoringSkill = skills.find(s => s.name === PLUGINS_AUTHORING_SKILL_ID)
+    expect(authoringSkill).toBeTruthy()
   })
 
   describe("handleSkillsCommand", () => {
@@ -233,6 +245,20 @@ describe("skills", () => {
 
       expect(result).toBe(true)
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("skill_name: \"plugins_registry_usage\""))
+      consoleSpy.mockRestore()
+    })
+
+    test("get subcommand (plugins authoring usage)", () => {
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation()
+      const result = handleSkillsCommand({
+        positional: ["skills", "get", "plugins.authoring.usage"],
+        flags: { format: "skill.md" },
+        config: {},
+        output: mockOutput
+      })
+
+      expect(result).toBe(true)
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("skill_name: \"plugins_authoring_usage\""))
       consoleSpy.mockRestore()
     })
 
