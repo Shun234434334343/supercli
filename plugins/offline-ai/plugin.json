@@ -1,0 +1,82 @@
+{
+  "name": "offline-ai",
+  "version": "0.1.0",
+  "description": "offline-ai CLI plugin with script-first wrappers and passthrough",
+  "source": "https://github.com/offline-ai/cli",
+  "tags": ["offline-ai", "ai", "scripts", "automation", "passthrough"],
+  "checks": [
+    { "type": "binary", "name": "ai" }
+  ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "offline-ai",
+      "resource": "cli",
+      "action": "version",
+      "description": "Show installed offline-ai CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "ai",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Install with: npm install -g @offline-ai/cli"
+      },
+      "args": []
+    },
+    {
+      "namespace": "offline-ai",
+      "resource": "script",
+      "action": "run",
+      "description": "Run an offline-ai script entry with optional input payload",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "ai",
+        "baseArgs": ["run"],
+        "positionalArgs": ["entry", "input"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: npm install -g @offline-ai/cli"
+      },
+      "args": [
+        { "name": "entry", "type": "string", "required": true, "description": "Script name or entry identifier" },
+        { "name": "input", "type": "string", "required": false, "description": "Optional JSON/string payload" }
+      ]
+    },
+    {
+      "namespace": "offline-ai",
+      "resource": "script",
+      "action": "run-file",
+      "description": "Run an offline-ai script file with optional input payload",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "ai",
+        "baseArgs": ["run", "-f"],
+        "positionalArgs": ["file", "input"],
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: npm install -g @offline-ai/cli"
+      },
+      "args": [
+        { "name": "file", "type": "string", "required": true, "description": "Path to script file" },
+        { "name": "input", "type": "string", "required": false, "description": "Optional JSON/string payload" }
+      ]
+    },
+    {
+      "namespace": "offline-ai",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any offline-ai CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "ai",
+        "passthrough": true,
+        "parseJson": false,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: npm install -g @offline-ai/cli"
+      },
+      "args": []
+    }
+  ]
+}
