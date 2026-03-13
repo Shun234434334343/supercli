@@ -3,10 +3,14 @@
   "version": "0.2.0",
   "description": "BoxLite Docker-backed plugin using boxcli",
   "source": "https://github.com/javimosch/boxlite",
+  "tags": ["experimental"],
   "checks": [
     { "type": "binary", "name": "node" },
     { "type": "binary", "name": "docker" }
   ],
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
   "commands": [
     {
       "namespace": "boxlite",
