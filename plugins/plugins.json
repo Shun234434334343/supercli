@@ -137,6 +137,16 @@
       }
     },
     {
+      "name": "azd",
+      "description": "Azure Developer CLI plugin with non-interactive wrappers and passthrough",
+      "tags": ["azure", "azd", "cloud", "devops", "automation"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/azd/plugin.json"
+      }
+    },
+    {
       "name": "helm",
       "description": "Helm CLI plugin with version wrapper and passthrough",
       "tags": ["helm", "kubernetes", "charts", "devops"],
@@ -443,6 +453,26 @@
       }
     },
     {
+      "name": "clever",
+      "description": "Clever Tools plugin with agent-friendly JSON wrappers for Clever Cloud workflows",
+      "tags": ["clever", "clever-cloud", "paas", "deployments", "json"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/clever/plugin.json"
+      }
+    },
+    {
+      "name": "aider",
+      "description": "Aider plugin with one-shot non-interactive coding wrappers",
+      "tags": ["aider", "coding-agent", "refactoring", "ai", "automation"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/aider/plugin.json"
+      }
+    },
+    {
       "name": "lightpanda",
       "description": "Lightpanda plugin with agent-friendly scripted browser automation via puppeteer-core",
       "tags": ["lightpanda", "browser", "automation", "puppeteer-core", "agents"],
@@ -450,6 +480,86 @@
       "source": {
         "type": "bundled",
         "manifest_path": "plugins/lightpanda/plugin.json"
+      }
+    },
+    {
+      "name": "gemini",
+      "description": "Gemini CLI plugin with headless JSON wrappers and passthrough",
+      "tags": ["gemini", "ai", "automation", "headless", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/gemini/plugin.json"
+      }
+    },
+    {
+      "name": "copilot",
+      "description": "GitHub Copilot CLI plugin with programmatic wrappers and passthrough",
+      "tags": ["copilot", "github", "ai", "automation", "headless", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/copilot/plugin.json"
+      }
+    },
+    {
+      "name": "openhands",
+      "description": "OpenHands CLI plugin with headless automation wrappers and passthrough",
+      "tags": ["openhands", "agents", "headless", "automation", "jsonl", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/openhands/plugin.json"
+      }
+    },
+    {
+      "name": "uipathcli",
+      "description": "UiPath CLI plugin with CI/CD lifecycle wrappers and passthrough",
+      "tags": ["uipath", "uipcli", "rpa", "cicd", "automation", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/uipathcli/plugin.json"
+      }
+    },
+    {
+      "name": "uipath",
+      "description": "UiPath CLI plugin with CI/CD-oriented wrappers and passthrough",
+      "tags": ["uipath", "uipcli", "rpa", "cicd", "automation"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/uipath/plugin.json"
+      }
+    },
+    {
+      "name": "plandex",
+      "description": "Plandex CLI plugin with non-interactive planning wrappers and passthrough",
+      "tags": ["plandex", "ai", "planning", "automation", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/plandex/plugin.json"
+      }
+    },
+    {
+      "name": "offline-ai",
+      "description": "offline-ai CLI plugin with script-first wrappers and passthrough",
+      "tags": ["offline-ai", "ai", "scripts", "automation", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/offline-ai/plugin.json"
+      }
+    },
+    {
+      "name": "goose",
+      "description": "Goose CLI plugin with headless automation wrappers and passthrough",
+      "tags": ["goose", "ai", "automation", "headless", "passthrough"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/goose/plugin.json"
       }
     },
     {
