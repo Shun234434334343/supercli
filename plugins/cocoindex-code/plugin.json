@@ -24,20 +24,42 @@
       "namespace": "cocoindex",
       "resource": "code",
       "action": "search",
-      "description": "Semantic code search via cocoindex-code MCP",
+      "description": "Semantic code search via direct cocoindex-code query wrapper",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/run-query.js"],
+        "parseJson": true,
+        "timeout_ms": 180000,
+        "missingDependencyHelp": "Install with: uv tool install --upgrade cocoindex-code --prerelease explicit --with \"cocoindex>=1.0.0a24\""
+      },
+      "args": [
+        { "name": "query", "type": "string", "required": true, "description": "Natural language query or code snippet" },
+        { "name": "limit", "type": "integer", "required": false, "description": "Maximum results to return" },
+        { "name": "offset", "type": "integer", "required": false, "description": "Pagination offset" },
+        { "name": "languages", "type": "string", "required": false, "description": "Comma-separated language filters" },
+        { "name": "paths", "type": "string", "required": false, "description": "Comma-separated glob path filters" },
+        { "name": "root", "type": "string", "required": false, "description": "Repository root path override" },
+        { "name": "refresh-index", "type": "boolean", "required": false, "description": "Refresh index before search" }
+      ]
+    },
+    {
+      "namespace": "cocoindex",
+      "resource": "mcp",
+      "action": "search",
+      "description": "Semantic code search via cocoindex-code MCP server",
       "adapter": "mcp",
       "adapterConfig": {
         "server": "cocoindex-code",
         "tool": "search",
         "mcp_protocol": "jsonrpc",
-        "mcp_wire": "jsonl",
         "timeout_ms": 180000
       },
       "args": [
         { "name": "query", "type": "string", "required": true, "description": "Natural language query or code snippet" },
         { "name": "limit", "type": "integer", "required": false, "description": "Maximum results to return" },
         { "name": "offset", "type": "integer", "required": false, "description": "Pagination offset" },
-        { "name": "refresh_index", "type": "boolean", "required": false, "description": "Refresh index before search (default true)" }
+        { "name": "refresh_index", "type": "boolean", "required": false, "description": "Refresh index before search" }
       ]
     },
     {

@@ -23,7 +23,7 @@ describe("plugin-cocoindex-code", () => {
       roots: expect.any(Array),
     }))
     expect(result.server_created).toBe(true)
-    expect(result.bound_capabilities).toEqual(["cocoindex.code.search", "cocoindex.index.build"])
+    expect(result.bound_capabilities).toEqual(["cocoindex.code.search", "cocoindex.mcp.search", "cocoindex.index.build"])
   })
 
   test("run does not overwrite existing MCP server", async () => {

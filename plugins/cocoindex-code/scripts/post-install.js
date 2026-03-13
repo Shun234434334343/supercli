@@ -38,7 +38,7 @@ async function run() {
     plugin: PLUGIN_NAME,
     mcp_server: MCP_SERVER_NAME,
     server_created: created,
-    bound_capabilities: ["cocoindex.code.search", "cocoindex.index.build"],
+    bound_capabilities: ["cocoindex.code.search", "cocoindex.mcp.search", "cocoindex.index.build"],
     provider: PLUGIN_NAME,
     synced_skills: Array.isArray(index.skills) ? index.skills.length : 0,
   }

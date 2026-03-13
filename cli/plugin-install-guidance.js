@@ -421,9 +421,10 @@ const PLUGIN_INSTALL_GUIDANCE = {
       "cocoindex-code --help",
       "supercli plugins install cocoindex-code",
       "supercli cocoindex index build --json",
-      "supercli cocoindex code search --query \"where is auth middleware\" --limit 5 --json"
+      "supercli cocoindex code search --query \"where is auth middleware\" --limit 5 --json",
+      "supercli cocoindex mcp search --query \"where is auth middleware\" --limit 5 --json"
     ],
-    note: "The plugin auto-registers local MCP server cocoindex-code and binds semantic search capability cocoindex.code.search. Use direct mcp call for advanced filters like languages/paths."
+    note: "The plugin auto-registers local MCP server cocoindex-code, exposes fast direct search as cocoindex.code.search, and keeps cocoindex.mcp.search available for MCP-native flows. Use direct mcp call for advanced filters like languages/paths."
   }
 
 }
