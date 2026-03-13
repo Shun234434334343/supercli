@@ -1,0 +1,116 @@
+{
+  "name": "openhands",
+  "version": "0.1.0",
+  "description": "OpenHands CLI plugin with headless automation wrappers and passthrough",
+  "source": "https://docs.openhands.dev/openhands/usage/cli/headless",
+  "checks": [
+    { "type": "binary", "name": "openhands" }
+  ],
+  "install_guidance": {
+    "plugin": "openhands",
+    "binary": "openhands",
+    "check": "openhands --version",
+    "install_steps": [
+      "pip install openhands-ai",
+      "openhands --version",
+      "supercli plugins install openhands"
+    ],
+    "note": "Headless mode runs in always-approve mode; use only in trusted repos and CI contexts."
+  },
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "openhands",
+      "resource": "self",
+      "action": "version",
+      "description": "Show OpenHands CLI version",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openhands",
+        "baseArgs": ["--version"],
+        "parseJson": false,
+        "missingDependencyHelp": "Please install OpenHands CLI to use this command."
+      },
+      "args": []
+    },
+    {
+      "namespace": "openhands",
+      "resource": "task",
+      "action": "run",
+      "description": "Run an OpenHands task in headless mode",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openhands",
+        "baseArgs": ["--headless", "-t"],
+        "positionalArgs": ["task"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install OpenHands CLI to use this command."
+      },
+      "args": [
+        { "name": "task", "type": "string", "required": true },
+        { "name": "json", "type": "boolean", "required": false },
+        { "name": "file-store", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "openhands",
+      "resource": "task",
+      "action": "file",
+      "description": "Run an OpenHands task file in headless mode",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openhands",
+        "baseArgs": ["--headless", "-f"],
+        "positionalArgs": ["file"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install OpenHands CLI to use this command."
+      },
+      "args": [
+        { "name": "file", "type": "string", "required": true },
+        { "name": "json", "type": "boolean", "required": false },
+        { "name": "file-store", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "openhands",
+      "resource": "task",
+      "action": "json",
+      "description": "Run an OpenHands headless task with JSONL streaming",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openhands",
+        "baseArgs": ["--headless", "--json", "-t"],
+        "positionalArgs": ["task"],
+        "stream": "jsonl",
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Please install OpenHands CLI to use this command."
+      },
+      "args": [
+        { "name": "task", "type": "string", "required": true },
+        { "name": "file-store", "type": "string", "required": false },
+        { "name": "config-file", "type": "string", "required": false }
+      ]
+    },
+    {
+      "namespace": "openhands",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough command to execute any OpenHands CLI command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "openhands",
+        "passthrough": true,
+        "parseJson": false,
+        "missingDependencyHelp": "Please install OpenHands CLI to use this command."
+      },
+      "args": []
+    }
+  ]
+}
