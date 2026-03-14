@@ -859,6 +859,26 @@ async function main() {
       return;
     }
 
+    // Handle passthrough positional arguments
+    const passthroughArgs = [];
+    if (cmd.adapterConfig && cmd.adapterConfig.passthrough === true) {
+      // For passthrough commands, collect remaining positional args after namespace.resource.action
+      const cmdPositionalIndex = positional.findIndex((p, i) => 
+        i >= 0 && 
+        positional[i] === namespace &&
+        positional[i + 1] === resource &&
+        positional[i + 2] === action
+      );
+      if (cmdPositionalIndex >= 0) {
+        // Collect all args after namespace resource action
+        for (let i = cmdPositionalIndex + 3; i < positional.length; i++) {
+          passthroughArgs.push(positional[i]);
+        }
+      }
+      // Pass to adapter via __rawArgs
+      uFlags.__rawArgs = passthroughArgs;
+    }
+
     const start = Date.now();
     const result = await execute(cmd, uFlags, {
       server: SERVER || "",

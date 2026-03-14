@@ -171,15 +171,24 @@ async function execute(cmd, flags, context = {}) {
   }
 
   if (passthroughMode) {
+    // Passthrough mode: use __rawArgs from flags (collected from remaining positional args)
     const passthroughArgs = Array.isArray(flags.__rawArgs) ? flags.__rawArgs : []
     args.push(...passthroughArgs)
   } else {
+    // Normal mode: collect positional values from flags OR from __positionalArgs
     const positionalValues = []
+    
+    // First, try to get positional values from flags (defined args)
     for (const name of positionalNames) {
       if (remainingFlags[name] !== undefined) {
         positionalValues.push(String(remainingFlags[name]))
         delete remainingFlags[name]
       }
+    }
+    
+    // Also support __positionalArgs array for commands that need raw positional values
+    if (Array.isArray(flags.__positionalArgs)) {
+      positionalValues.push(...flags.__positionalArgs)
     }
 
     const flagArgs = []
