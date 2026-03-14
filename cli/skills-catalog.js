@@ -7,17 +7,27 @@ function dcliDir() {
   return process.env.SUPERCLI_HOME || path.join(os.homedir(), ".dcli")
 }
 
+function supercliDir() {
+  return process.env.SUPERCLI_HOME || path.join(os.homedir(), ".supercli")
+}
+
 function providersFile() {
-  return path.join(dcliDir(), "skills-providers.json")
+  const supercliPath = path.join(supercliDir(), "skills-providers.json")
+  const dcliPath = path.join(dcliDir(), "skills-providers.json")
+  return fs.existsSync(supercliPath) ? supercliPath : dcliPath
 }
 
 function indexFile() {
-  return path.join(dcliDir(), "skills-index.json")
+  const supercliPath = path.join(supercliDir(), "skills-index.json")
+  const dcliPath = path.join(dcliDir(), "skills-index.json")
+  return fs.existsSync(supercliPath) ? supercliPath : dcliPath
 }
 
 function ensureDir() {
   const dir = dcliDir()
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  const supercliDirPath = supercliDir()
+  if (!fs.existsSync(supercliDirPath)) fs.mkdirSync(supercliDirPath, { recursive: true })
 }
 
 function defaultProviders() {
@@ -135,7 +145,7 @@ function syncCatalog() {
       for (const entry of entries) {
         if (!entry || !entry.id || !entry.source_url) continue
         skills.push({
-          id: `${provider.name}:${entry.id}`,
+          id: provider.name + ":" + entry.id,
           provider: provider.name,
           name: entry.name || entry.id,
           description: entry.description || "",
@@ -143,6 +153,34 @@ function syncCatalog() {
           tags: Array.isArray(entry.tags) ? entry.tags : [],
           updated_at: new Date().toISOString()
         })
+      }
+      continue
+    }
+
+    if (provider.type === "plugin_fs") {
+      const pluginDir = provider.plugin_dir
+      if (!pluginDir || !fs.existsSync(pluginDir)) continue
+      const skillsDir = path.join(pluginDir, "skills")
+      if (fs.existsSync(skillsDir)) {
+        const files = walkDir(skillsDir)
+        for (const filePath of files) {
+          const markdown = fs.readFileSync(filePath, "utf-8")
+          const { frontmatter, body } = parseFrontmatter(markdown)
+          const baseId = baseSkillId(filePath, frontmatter, skillsDir)
+          const heading = body.split("\n").find(l => l.startsWith("# "))
+          const name = frontmatter.skill_name || (heading ? heading.slice(2).trim() : baseId)
+          const description = frontmatter.description || ""
+          const tags = typeof frontmatter.tags === "string" ? frontmatter.tags.split(",").map(t => t.trim()).filter(Boolean) : []
+          skills.push({
+            id: provider.name + ":" + baseId,
+            provider: provider.name,
+            name,
+            description,
+            source_path: filePath,
+            tags,
+            updated_at: new Date().toISOString()
+          })
+        }
       }
       continue
     }
@@ -158,9 +196,8 @@ function syncCatalog() {
         const name = frontmatter.skill_name || (heading ? heading.slice(2).trim() : baseId)
         const description = frontmatter.description || ""
         const tags = typeof frontmatter.tags === "string" ? frontmatter.tags.split(",").map(t => t.trim()).filter(Boolean) : []
-
         skills.push({
-          id: `${provider.name}:${baseId}`,
+          id: provider.name + ":" + baseId,
           provider: provider.name,
           name,
           description,
@@ -206,7 +243,6 @@ function getCatalogSkill(providerId) {
   const hit = (idx.skills || []).find(s => s.id === providerId)
   if (!hit) return null
   let markdown = null
-
   if (hit.source_path) {
     if (!fs.existsSync(hit.source_path)) return null
     markdown = fs.readFileSync(hit.source_path, "utf-8")
@@ -215,14 +251,135 @@ function getCatalogSkill(providerId) {
     if (res.error || res.status !== 0) return null
     markdown = (res.stdout || "").trim()
   }
-
   if (!markdown) return null
+  return { ...hit, markdown }
+}
 
+
+
+/**
+ * Get catalog information with provider breakdown
+ */
+function getCatalogInfo() {
+  const idx = readIndex()
+  const providers = listProviders()
+  
+  const providerStats = providers.map(provider => {
+    if (!provider.enabled) {
+      return { name: provider.name, type: provider.type, enabled: false, status: 'disabled' }
+    }
+    
+    let skillsCount = 0
+    let status = 'active'
+    let details = {}
+    
+    if (provider.type === 'plugin_fs') {
+      const pluginDir = provider.plugin_dir
+      if (!pluginDir || !fs.existsSync(pluginDir)) {
+        status = 'missing'
+        details.error = 'Plugin directory not found'
+      } else {
+        const skillsDir = path.join(pluginDir, 'skills')
+        if (fs.existsSync(skillsDir)) {
+          const files = walkDir(skillsDir)
+          skillsCount = files.length
+          details.plugin_dir = pluginDir
+          details.skills_dir = skillsDir
+        } else {
+          status = 'no_skills_dir'
+          details.skills_dir = skillsDir
+        }
+      }
+    } else if (provider.type === 'local_fs' || provider.type === 'repo_fs') {
+      const roots = Array.isArray(provider.roots) ? provider.roots : []
+      for (const root of roots) {
+        if (fs.existsSync(root)) {
+          const files = walkDir(root)
+          skillsCount += files.length
+        }
+      }
+      details.roots = roots
+    } else if (provider.type === 'remote_static') {
+      skillsCount = Array.isArray(provider.entries) ? provider.entries.length : 0
+      details.entries_count = skillsCount
+      details.source_repo = provider.source_repo
+    }
+    
+    return {
+      name: provider.name,
+      type: provider.type,
+      enabled: provider.enabled,
+      status,
+      skills_count: skillsCount,
+      ...details
+    }
+  })
+  
   return {
-    ...hit,
-    markdown
+    index: {
+      version: idx.version,
+      updated_at: idx.updated_at,
+      total_skills: idx.skills.length
+    },
+    providers: providerStats,
+    recent_skills: idx.skills.slice(-5).map(s => ({
+      id: s.id,
+      name: s.name,
+      provider: s.provider,
+      added_at: s.updated_at
+    }))
   }
 }
+
+/**
+ * Describe all provider types with examples
+ */
+function describeProviderTypes() {
+  return {
+    provider_types: [
+      {
+        name: 'local_fs',
+        description: 'Scans local directories for SKILL.md files',
+        example: {
+          name: 'my-skills',
+          type: 'local_fs',
+          roots: ['~/.config/opencode/skills'],
+          enabled: true
+        }
+      },
+      {
+        name: 'repo_fs',
+        description: 'Scans repository directories for SKILL.md files',
+        example: {
+          name: 'repo',
+          type: 'repo_fs',
+          roots: ['.agents/skills', 'docs/skills'],
+          enabled: true
+        }
+      },
+      {
+        name: 'remote_static',
+        description: 'Pre-indexed skills from remote repositories (GitHub)',
+        example: {
+          name: 'visual-explainer',
+          type: 'remote_static',
+          source_repo: 'https://github.com/user/repo',
+          entries: [{ id: 'skill-1', source_url: 'https://raw.githubusercontent.com/...' }]
+        }
+      },
+      {
+        name: 'plugin_fs',
+        description: 'Auto-discovers SKILL.md files from installed plugin skills/ directory',
+        example: {
+          name: 'superbackend',
+          type: 'plugin_fs',
+          plugin_dir: '/path/to/plugins/superbackend'
+        }
+      }
+    ]
+  }
+}
+
 
 module.exports = {
   listProviders,
@@ -233,5 +390,7 @@ module.exports = {
   syncCatalog,
   listCatalogSkills,
   searchCatalog,
-  getCatalogSkill
+  getCatalogSkill,
+  getCatalogInfo,
+  describeProviderTypes
 }
