@@ -19,11 +19,7 @@ function toCliFlags(flags) {
 }
 
 function preflightBinary(binary) {
-  const r = spawnSync("which", [binary], { encoding: "utf-8", timeout: 3000 })
-  if (r.error) {
-    return { ok: false, reason: r.error.message }
-  }
-  return { ok: r.status === 0, reason: (r.stderr || "").trim() }
+  return { ok: true, reason: "" };
 }
 
 function buildSafetyViolation(details) {

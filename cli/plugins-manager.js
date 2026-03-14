@@ -357,8 +357,8 @@ function runStoredHook(pluginName, kind, storedHook) {
   }
 }
 
-function checkBinary(binary) {
-  const r = spawnSync(binary, ["--version"], { encoding: "utf-8", timeout: 5000 })
+function checkBinary(binary, args) {
+  const r = spawnSync(binary, args || ["--version"], { encoding: "utf-8", timeout: 5000 })
   if (r.error) {
     return {
       binary,
@@ -394,7 +394,7 @@ function doctorPlugin(name) {
   const checks = []
   for (const check of (plugin.checks || [])) {
     if (check && check.type === "binary" && check.name) {
-      checks.push({ type: "binary", ...checkBinary(check.name) })
+      checks.push({ type: "binary", ...checkBinary(check.name, check.args) })
     }
   }
 
