@@ -581,6 +581,16 @@
         "type": "bundled",
         "manifest_path": "plugins/boxlite/plugin.json"
       }
+    },
+    {
+      "name": "pplx",
+      "description": "Perplexity API CLI for online search, research, and Q&A with citations",
+      "tags": ["perplexity", "ai", "search", "research", "llm", "citations", "online"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/pplx/plugin.json"
+      }
     }
   ]
 }
