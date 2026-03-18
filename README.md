@@ -1,5 +1,9 @@
 # supercli — Universal Capability Router for AI Agents
 
+[![npm version](https://img.shields.io/npm/v/superacli.svg)](https://www.npmjs.com/package/superacli)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Language](https://img.shields.io/badge/language-javascript-blue)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+
 Discover and execute capabilities across CLIs, APIs, MCP servers, workflows, and custom automations through a single agent-friendly interface.
 
 ## Why Supercli?
@@ -448,9 +452,20 @@ The following are built-in to dcli (no plugins required):
 - Extensible plugin system for registering new harnesses
 - Support for OpenAPI, HTTP, MCP, and custom CLI adapters
 
+## What People Are Saying
+
+![Testimonial zetsi77](docs/images/testimonial-zetsi77.png)
+
+> "Yooooooo, my agent nearly shit himself when I showed him this. TY! I'll keep an eye out for updates from you. This is a fantastic tool!"
+> — **zetsi77** ([@Hadu_Ken77](https://x.com/Hadu_Ken77))
+
 ## Contributors
 
 Contributions are welcome! If you have ideas for improvements, new adapters, or bug fixes, just send a Pull Request (PR) and I will review it.
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=javimosch/supercli&type=date&legend=top-left)](https://www.star-history.com/#javimosch/supercli&type=date&legend=top-left)
 
 ## License
 
