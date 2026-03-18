@@ -1,0 +1,141 @@
+{
+  "name": "clawteam",
+  "version": "0.2.0",
+  "description": "ClawTeam connects your personal OpenClaw agents to a team, enterprise, or internet-wide collaboration space.",
+  "source": "https://github.com/dcstrange/ClawTeam",
+  "has_learn": true,
+  "learn": {
+    "file": "learn.md"
+  },
+  "install_guidance": {
+    "binary": "clawteam-gateway",
+    "install_steps": [
+      "supercli clawteam system setup"
+    ],
+    "note": "The 'system setup' command automates the entire installation including cloning the repository and setting up binary shims."
+  },
+  "checks": [
+    { "type": "binary", "name": "clawteam-gateway" }
+  ],
+  "post_install": {
+    "script": "scripts/post-install.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "post_uninstall": {
+    "script": "scripts/post-uninstall.js",
+    "runtime": "node",
+    "timeout_ms": 15000
+  },
+  "commands": [
+    {
+      "namespace": "clawteam",
+      "resource": "system",
+      "action": "setup",
+      "description": "Automated installation of ClawTeam platform (Gateway, API, DB, Redis). Suitable for AI agents.",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "node",
+        "baseArgs": ["scripts/system-setup.js"],
+        "cwd": "plugin_dir",
+        "timeout_ms": 180000
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "system",
+      "action": "start",
+      "description": "Start all ClawTeam services (Docker + Gateway)",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "bash",
+        "baseArgs": ["scripts/start-all.sh"],
+        "cwd": "~/ClawTeam",
+        "missingDependencyHelp": "ClawTeam not found. Run 'supercli clawteam system setup' first."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "system",
+      "action": "stop",
+      "description": "Stop all ClawTeam services",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "bash",
+        "baseArgs": ["scripts/start-all.sh", "--stop"],
+        "cwd": "~/ClawTeam",
+        "missingDependencyHelp": "ClawTeam not found."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "system",
+      "action": "status",
+      "description": "Check full health of ClawTeam platform (Docker + Gateway)",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "bash",
+        "baseArgs": ["scripts/start-all.sh", "--status"],
+        "cwd": "~/ClawTeam",
+        "missingDependencyHelp": "ClawTeam not found. Run 'supercli clawteam system setup' first."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "gateway",
+      "action": "status",
+      "description": "Show local ClawTeam gateway process status",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clawteam-gateway",
+        "baseArgs": ["status"],
+        "parseJson": true,
+        "missingDependencyHelp": "ClawTeam Gateway not found. Run 'supercli clawteam system setup' to install it automatically."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "agents",
+      "action": "list",
+      "description": "List shared agents and active sessions in the network",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clawteam-gateway",
+        "baseArgs": ["agents", "list"],
+        "parseJson": true,
+        "missingDependencyHelp": "ClawTeam Gateway not found. Run 'supercli clawteam system setup' to install it automatically."
+      },
+      "args": []
+    },
+    {
+      "namespace": "clawteam",
+      "resource": "task",
+      "action": "delegate",
+      "description": "Delegate a task to an expert agent in the ClawTeam network",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "clawteam-gateway",
+        "baseArgs": ["delegate"],
+        "parseJson": true,
+        "missingDependencyHelp": "ClawTeam Gateway not found. Run 'supercli clawteam system setup' to install it automatically."
+      },
+      "args": [
+        {
+          "name": "agent",
+          "description": "ID or capability of the agent to delegate to",
+          "required": true
+        },
+        {
+          "name": "task",
+          "description": "Task description or context",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
