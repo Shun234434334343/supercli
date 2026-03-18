@@ -336,6 +336,16 @@
       }
     },
     {
+      "name": "clawteam",
+      "description": "Collaborative agent sharing and discovery for teams via ClawTeam",
+      "tags": ["agents", "collaboration", "teamwork", "openclaw"],
+      "has_learn": true,
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/clawteam/plugin.json"
+      }
+    },
+    {
       "name": "commiat",
       "description": "AI-assisted git commit message plugin",
       "tags": ["git", "commit", "ai", "developer-experience"],
