@@ -11,6 +11,15 @@
       }
     },
     {
+      "name": "opencode",
+      "description": "OpenCode AI assistant CLI plugin for natural language coding tasks",
+      "tags": ["opencode", "ai", "coding", "assistant", "refactoring"],
+      "source": {
+        "type": "bundled",
+        "manifest_path": "plugins/opencode/plugin.json"
+      }
+    },
+    {
       "name": "gwc",
       "description": "Google Workspace CLI passthrough plugin",
       "tags": ["google", "workspace", "api", "passthrough"],
