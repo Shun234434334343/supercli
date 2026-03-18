@@ -1,0 +1,109 @@
+{
+  "name": "jsalt",
+  "version": "0.1.0",
+  "description": "jsalt plugin exposing JSA docs-oriented workflows and jsa-ast validation commands",
+  "source": "https://github.com/javimosch/jsalt",
+  "tags": ["jsalt", "jsa", "frontend", "ast", "validation", "agents"],
+  "checks": [
+    { "type": "binary", "name": "jsa-ast", "args": ["--help"] }
+  ],
+  "install_guidance": {
+    "plugin": "jsalt",
+    "binary": "jsa-ast",
+    "check": "jsa-ast --help",
+    "install_steps": [
+      "npm install -g jsalt",
+      "jsa-ast --help",
+      "supercli plugins install ./plugins/jsalt --json"
+    ],
+    "note": "Use 'supercli plugins learn jsalt' to load agent-focused JSALT syntax, patterns, and examples before generating .jsa applications."
+  },
+  "learn": {
+    "file": "skills/quickstart/SKILL.md"
+  },
+  "commands": [
+    {
+      "namespace": "jsalt",
+      "resource": "cli",
+      "action": "help",
+      "description": "Show jsa-ast CLI usage help",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "jsa-ast",
+        "baseArgs": ["--help"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install jsalt globally: npm install -g jsalt"
+      },
+      "args": []
+    },
+    {
+      "namespace": "jsalt",
+      "resource": "ast",
+      "action": "validate",
+      "description": "Validate .jsa syntax for a file or directory",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "jsa-ast",
+        "positionalArgs": ["path"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install jsalt globally: npm install -g jsalt"
+      },
+      "args": [
+        { "name": "path", "type": "string", "required": true, "description": "File, directory, or glob to validate" }
+      ]
+    },
+    {
+      "namespace": "jsalt",
+      "resource": "ast",
+      "action": "json",
+      "description": "Parse .jsa and emit machine-readable JSON AST",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "jsa-ast",
+        "baseArgs": ["--json"],
+        "positionalArgs": ["path"],
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install jsalt globally: npm install -g jsalt"
+      },
+      "args": [
+        { "name": "path", "type": "string", "required": true, "description": "File, directory, or glob to parse" }
+      ]
+    },
+    {
+      "namespace": "jsalt",
+      "resource": "ast",
+      "action": "tree",
+      "description": "Render parsed .jsa structure as a tree",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "jsa-ast",
+        "baseArgs": ["--tree"],
+        "positionalArgs": ["path"],
+        "parseJson": false,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install jsalt globally: npm install -g jsalt"
+      },
+      "args": [
+        { "name": "path", "type": "string", "required": true, "description": "File, directory, or glob to parse" }
+      ]
+    },
+    {
+      "namespace": "jsalt",
+      "resource": "_",
+      "action": "_",
+      "description": "Passthrough to run any jsa-ast command",
+      "adapter": "process",
+      "adapterConfig": {
+        "command": "jsa-ast",
+        "passthrough": true,
+        "parseJson": true,
+        "timeout_ms": 15000,
+        "missingDependencyHelp": "Install jsalt globally: npm install -g jsalt"
+      },
+      "args": []
+    }
+  ]
+}
